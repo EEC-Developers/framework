@@ -1,10 +1,10 @@
-Hash table classes
+# Hash table classes
 
-Description
+## Description
 
 Since there is a longstanding bug in the AmigaE module format that makes it choke on multiple return codes this makes an enhanced solution for the Class/hash module.
 
-Index
+## Index
 
 Hash/hashbase -- global base module
   constants -- prime number sizes for hash tables
