@@ -32,6 +32,7 @@ Since there is a longstanding bug in the AmigaE module format that makes it chok
 #### hash_iterator -- iterates through any child class of hash_base
 
 * init -- constructor
+* get_current_item -- getter for item currently referenced by the iterator
 * next -- finds next item or returns NIL if end is reached
 
 ### Hash/stringhash -- uses null terminated string keys
