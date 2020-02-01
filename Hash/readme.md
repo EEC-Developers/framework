@@ -43,6 +43,12 @@ Since there is a longstanding bug in the AmigaE module format that makes it chok
 
 ### Hash/pointerhash -- uses pointer or LONG keys
 
-#### pointer_hash -- actual hash_base implementaton
+#### pointer_hash -- actual hash table implementaton
 
 #### pointer_hash_link -- actual hash_link implementaton
+
+### Hash/listhash -- uses E-Lists as keys
+
+#### list_hash -- actual hash table implementation
+
+#### list_hash_link -- combines pointer hash and string hash functions to implement hash_link
