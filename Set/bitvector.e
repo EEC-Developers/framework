@@ -1,214 +1,187 @@
 OPT MODULE
 
-EXPORT ENUM I_GET, I_SET
+MODULE 'Iterator/iterator','Set/setBase'
 
-EXPORT OBJECT bitset PRIVATE
+EXPORT OBJECT bitVector OF set PRIVATE
   items:PTR TO LONG -> E-List of host items
-  i_itemnum:LONG -> interface to host object
+  offset:INT -> offset in host object to Int enumerator
   lastitem:INT
+  numBuckets:INT
 ENDOBJECT
 
-/*PROC mask(host:PTR TO LONG) OF bitset
-  DEF ret:PTR TO LONG,x:REG,y,count:REG
-
-  count:=Shr(x,5) -> high 16 bits
-  x:=x AND 31 -> low 5 bits
-  ret:=NewR(Shr(self.lastitem,5))
-  ret[count]:=Shl(1,x)
-ENDPROC
-*/
-
-PROC get_last() OF bitset IS self.lastitem
-
-PROC get_items() OF bitset IS self.items
-
-PROC get_item_num(item) OF bitset
-  DEF x,ret:REG
-  x:=ListItem(self.i_itemnum,I_GET)
-  ret:=x(item)
+PROC mask(host:PTR TO LONG) OF bitVector
+  DEF ret,x:REG
+  ret:=List(self.numBuckets)
+  x:=self.get_item_num(host)
+  IF x>self.lastitem OR x<=0 THEN Raise("ARGS")
+  ret[Shr(x,5)]:=Shl(1,x AND 31)
 ENDPROC ret
 
-PROC set_item_num(item,value) OF bitset
-  DEF x
-  x:=ListItem(self.i_itemnum,I_SET)
-  x(item,value)
-ENDPROC
+PROC set_item_num(ob,value) OF bitVector IS PutInt(ob+(self.offset),value)
 
-PROC get_num_buckets() OF bitset IS Shr(self.lastitem,5)
+PROC get_item_num(ob) OF bitVector IS Int(ob+(self.offset))
 
-PROC init(itemlist:PTR TO LONG,i_host) OF bitset
+PROC get_items() OF bitVector IS self.items
+
+PROC get_last_item() OF bitVector IS self.lastitem
+
+PROC get_num_buckets() OF bitVector IS self.numBuckets
+
+PROC init(itemlist:PTR TO LONG,i_host) OF bitVector
   DEF y:REG,iter:PTR TO LONG
   y:=ListLen(itemlist)-1
   IF y<0 THEN Raise("ARGS")
-  IF y=0 OR y>65535 THEN Raise("bset")
+  IF y=0 THEN Raise("bset")
   self.items:=itemlist
   self.lastitem:=y
-  self.i_itemnum:=i_host
+  self.offset:=i_host
   REPEAT -> Enumerate the items
-    iter:=itemlist[y]
+    iter:=ListItem(itemlist,y)
     self.set_item_num(iter,y)
     y--
   UNTIL y<0
 ENDPROC
 
-PROC all_mask() OF bitset
-  DEF ret:REG,y:REG
+PROC all_mask() OF bitVector
+  DEF ret,y:REG,iter:REG
+  iter:=0
+  ret:=List(self.numBuckets)
   y:=self.lastitem+1
+  WHILE y>31
+    ret[iter]:=-1
+    iter++
+    y:=y-32
+  ENDWHILE
   ret:=Shl(1,y)-1
 ENDPROC ret
 
-EXPORT OBJECT subset
+EXPORT OBJECT maskList OF subset
 PRIVATE
-  parent:PTR TO bitset
-  mask:PTR TO LONG
+  mask:PTR TO LONG -> E-List of masks
 ENDOBJECT
 
-PROC get_parent() OF subset IS self.parent
+PROC get_mask() OF maskList IS self.mask
 
-PROC get_mask() OF subset IS self.mask
+PROC is_empty() OF maskList
+  DEF x,ret
+  ret:=Exists({x},self.mask,`x<>0)
+ENDPROC Not(ret)
 
-PROC init(parent:PTR TO bitset,members) OF subset -> constructor
-  DEF x:PTR TO LONG,iter,count:REG,index:REG
-  self.parent:=parent
-  count:=Shr(parent.lastitem,5)
-  self.mask:=NewR(count)
+-> create maskList from list of items
+PROC init(parentSet:PTR TO bitVector,members) OF maskList -> constructor
+  DEF x:PTR TO LONG,iter:REG,bucket:REG,y:REG,bucketNum:REG
+  SUPER self.baseInit(parentSet)
+  self.mask:=List(parentSet.get_num_buckets())
   iter:=ListLen(members)
-  IF iter=0 THEN Raise('ARGS') 
+  IF iter=0 THEN Raise('ARGS')
   REPEAT
     iter--
     x:=ListItem(members,iter)
-    count:=x AND 31
-    index:=Shr(x,5)
-    self.mask[index]:=self.mask[index] OR Shl(1,count)
+    y:=parentSet.get_item_num(x)
+    bucketNum:=Shr(y,5)
+    bucket:=self.mask[bucketNum]
+    self.mask[bucketNum]:=bucket OR Shl(1,y AND 31)
   UNTIL iter=0
 ENDPROC
 
-PROC has_a(myitem:PTR TO LONG) OF subset
-  DEF ret:REG,
-    x:PTR TO bitset,
-    count:REG,
-    bucket:PTR TO LONG,
-    y:REG
-  x:=self.parent
-  y:=x.get_item_num(myitem)
-  count:=Shr(y,5)
-  bucket:=self.get_mask()
-  ret:=y AND 31 AND bucket[count]
-ENDPROC ret
-
-PROC is_empty() OF subset
-  DEF count:REG,ret:REG,parent:PTR TO bitset,mask:PTR TO LONG
-  mask:=self.mask
-  parent:=self.get_parent()
-  count:=parent.get_num_buckets()
-  WHILE mask[]++=0 DO count--
-  ret:=count>0
-ENDPROC ret
-
-PROC add_item(myitem:PTR TO LONG) OF subset
-  DEF count:REG,x:PTR TO bitset,bucket:REG,y:REG
-  x:=self.parent
-  y:=x.get_item_num(myitem)
-  count:=Shr(y,5)
-  bucket:=self.mask[count] OR Shl(1,(y AND 31))
-  self.mask[count]:=bucket
+-> create a maskList with a fixed mask
+PROC create(parent:PTR TO bitVector,mask:PTR TO LONG) OF maskList -> constructor
+  SUPER self.baseInit(parent)
+  self.mask:=mask
 ENDPROC
 
-PROC remove_item(myitem:PTR TO LONG) OF subset
-  DEF count:REG,y:REG,x:PTR TO bitset,bucket:PTR TO LONG
-  x:=self.parent
-  y:=x.get_item_num(myitem)
-  count:=Shr(y,5)
-  bucket:=self.mask[count] AND Not(Shl(1,(y AND 31)))
-  self.mask[count]:=bucket
+PROC remove(items:PTR TO maskList) OF maskList
+  DEF bucket:REG,iter:REG,myParent:PTR TO bitVector
+  myParent:=self.get_parent()
+  iter:=myParent.numBuckets
+  REPEAT
+    bucket:=self.mask[iter] AND Not(items.mask[iter])
+    self.mask[iter]:=bucket
+    iter--
+  UNTIL iter<0
 ENDPROC
 
-PROC give(myitem:PTR TO LONG, destination:PTR TO subset) OF subset
-  DEF ret
-  ret:=FALSE
-  IF self.has_a(myitem)
-    self.remove_item(myitem)
-    destination.add_item(myitem)
-    ret:=TRUE
-  ENDIF
-ENDPROC ret
-
-PROC create(parent:PTR TO bitset,mask=0) OF subset -> constructor
-  DEF size:REG
-  size:=parent.get_num_buckets()*SIZEOF LONG
-  self.parent:=parent
-  IF mask
-    CopyMem(mask,NewR(size),size)
-  ELSE
-    self.mask:=NewR(size)
-  ENDIF
+PROC insert(items:PTR TO maskList) OF maskList
+  DEF bucket:REG,iter:REG,myParent:PTR TO bitVector
+  myParent:=self.get_parent()
+  iter:=myParent.numBuckets
+  REPEAT
+    bucket:=self.mask[iter] OR items.mask[iter]
+    self.mask[iter]:=bucket
+    iter--
+  UNTIL iter<0
 ENDPROC
+  
+PROC has_one(item:PTR TO maskList) OF maskList
+  DEF iter:REG,myParent:PTR TO bitVector
+  myParent:=self.get_parent()
+  iter:=myParent.numBuckets
+  REPEAT
+    IF self.mask[iter] AND item.mask[iter]<>0 THEN RETURN TRUE
+    iter--
+  UNTIL iter<0
+ENDPROC FALSE
 
-PROC take(myitem:PTR TO LONG, source:PTR TO subset) OF subset
-ENDPROC source.give(myitem, self)
+PROC has_all(items:PTR TO maskList) OF maskList
+  DEF bucket:REG,iter:REG,myParent:PTR TO bitVector
+  myParent:=self.get_parent()
+  iter:=myParent.numBuckets
+  REPEAT
+    bucket:=self.mask[iter] AND items.mask[iter]
+    IF bucket<>self.mask[iter] THEN RETURN FALSE
+    iter--
+  UNTIL iter<0
+ENDPROC TRUE
 
-PROC has_all(things:PTR TO subset) OF subset
-  DEF ret:REG,count:REG,
-    src:PTR TO LONG,src2:PTR TO LONG,
-    parent:PTR TO bitset
-  parent:=self.parent
-  IF parent<>things.get_parent() THEN Raise("ARGS")
-  count:=parent.get_num_buckets()
-  src:=self.mask
-  src2:=things.get_mask()
-  WHILE count>0 AND src[]++=src2[]++ DO count--
-  ret:=(count=0)
-ENDPROC ret
-
-PROC has_one(things:PTR TO subset) OF subset
-  DEF ret:REG,count:REG,
-    src:PTR TO LONG,src2:PTR TO LONG,
-    parent:PTR TO bitset
-  parent:=self.parent
-  IF parent<>things.get_parent() THEN Raise("ARGS")
-  count:=parent.get_num_buckets()
-  src:=self.mask
-  src2:=things.get_mask()
-  WHILE count>0 AND And(src[]++,src2[]++)=0 DO count--
-  ret:=(count<>0)
-ENDPROC ret
-
-EXPORT OBJECT bitset_iterator
-  item:PTR TO LONG
+EXPORT OBJECT bitVector_iterator OF set_iterator
 PRIVATE
-  iter:PTR TO LONG
+  item:PTR TO LONG
   mask:LONG
-  source:PTR TO subset
+  source:PTR TO maskList
+  buckets:PTR TO LONG
+  bucketNum:LONG
   count:INT
 ENDOBJECT
 
-PROC init(src:PTR TO subset) OF bitset_iterator -> constructor
+PROC get_current_item() OF bitVector_iterator IS self.item
+
+-> constructor
+PROC init(src:PTR TO maskList) OF bitVector_iterator
   self.mask:=1
   self.source:=src
   self.item:=NIL
   self.count:=0
-  self.iter:=src.get_mask()
+  self.bucketNum:=0
+  self.buckets:=src.get_mask()
 ENDPROC
 
-PROC next() OF bitset_iterator
-  DEF ret:REG,bits:REG,field:REG,
-    src:PTR TO subset,bs:PTR TO bitset,i:PTR TO LONG
+PROC next() OF bitVector_iterator
+  DEF count:REG,
+    last:REG,
+    mask:REG,
+	bn:REG,
+    src:REG PTR TO maskList,
+    bv:PTR TO bitVector,
+    i:PTR TO LONG
   src:=self.source
-  ret:=FALSE
-  bs:=src.get_parent()
-  field:=self.iter[]
-  WHILE self.count<bs.get_last() AND Not(ret) -> find next item
-    IF self.mask AND field -> found
-      i:=bs.get_items()
-      self.item:=i[self.count]
-      ret:=TRUE
+  bv:=src.get_parent()
+  count:=self.count
+  bn:=self.bucketNum
+  last:=bv.get_last_item()
+  WHILE count <= last -> find next item
+    IF self.mask[bn] AND self.buckets[bn] -> found
+      i:=bv.get_items()
+      self.item:=i[count]
+      self.count:=count
+	  self.bucketNum:=bn
+      RETURN TRUE
     ENDIF
-    self.count++
-    bits:=self.count AND 31
-    self.mask:=Shl(1,bits)
-    IF bits=0
-      self.iter:=self.iter+SIZEOF LONG -> must not postincrement self
-      field:=self.iter[]
-    ENDIF
+    count++
+    mask:=Shl(1,count AND 31)
+	IF mask=0
+      bn:=Shr(count,5)
+	ENDIF
   ENDWHILE
-ENDPROC ret
+  self.mask:=mask
+  self.count:=count
+ENDPROC FALSE

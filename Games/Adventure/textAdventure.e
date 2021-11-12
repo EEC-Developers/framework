@@ -1,6 +1,6 @@
 OPT MODULE
 
-MODULE 'Set/bitset32','Hash/stringhash','Hash/hashbase','iterator/iterator'
+MODULE 'Set/smallSet','Hash/stringHash','Hash/hashBase','iterator/Iterator'
 
 CONST MAXWIDTH=80
 
