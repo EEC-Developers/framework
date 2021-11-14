@@ -2,26 +2,33 @@
 
 MODULE 'Hash/hashbase', 'Hash/listhash'
 
+OBJECT test OF list_hash
+ENDOBJECT
+
 OBJECT lister OF list_hash_link
 	cargo:LONG
 ENDOBJECT
 
-DEF tester:PTR TO list_hash,
+PROC build(x:PTR TO LONG,y) OF lister
+	SUPER self.init(x)
+	self.cargo:=y
+ENDPROC
+
+DEF tester:PTR TO test,
 	iter:PTR TO hash_iterator,
 	link:PTR TO lister,
-	link2:PTR TO lister
+	link2:PTR TO lister,
+	link3:PTR TO lister
 
 PROC main() HANDLE
 	NEW tester.init(HASH_TINY)
-	NEW link.init([$12345678,$BCDEF0,$0F0F0F0F,$F0F0F0F0])
+	NEW link.build([$12345678,$BCDEF0,$0F0F0F0F,$F0F0F0F0],1)
 	WriteF('initialized\n')
-	link.cargo:=1
-	tester.add(link)
-	out(link)
-	NEW link2.init([$76543210,$FEDCBA98,$0000FFFF,$FFFF0000])
-	link2.cargo:=2
-	tester.add(link2)
-	out(link2)
+	add(link)
+	NEW link2.build([$76543210,$FEDCBA98,$0000FFFF,$FFFF0000],2)
+	add(link2)
+	NEW link3.build([1],3)
+	add(link3)
 EXCEPT
 	SELECT exception
 		CASE "MEM"
@@ -31,7 +38,11 @@ EXCEPT
 	ENDSELECT
 ENDPROC
 
-PROC out(link:PTR TO lister)
-	WriteF('Added \d to bucket \d with hash \h listlen \d\n',
-		link.cargo, tester.hash_slot(link), link.hash_value, link.get_key() )
+-> This local function adds and displays information about the node just added
+PROC add(link:PTR TO lister)
+	tester.add(link)
+	WriteF('Added \d ',link.cargo)
+	WriteF('to bucket \d ',tester.hash_slot(link))
+	WriteF('with hash \h ',link.hash_value)
+	WriteF('listlen \d\n',ListLen(link.get_key()))
 ENDPROC

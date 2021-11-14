@@ -47,7 +47,7 @@ PROC key_equality(other:PTR TO hash_link) OF hash_link IS EMPTY
 -> modulo distribution method for slot selection
 PROC hash_slot(link:PTR TO hash_link) OF hash_base
   DEF ret
-  ret:=link.hash_value
+  ret:=link.hash_value AND $7FFF -> REMOVE negative sign bit
   ret:=Mod(ret,self.size)
 ENDPROC ret
 

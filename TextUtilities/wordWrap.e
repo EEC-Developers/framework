@@ -1,6 +1,6 @@
 OPT MODULE
 
-EXPORT OBJECT wrapBase PRIVATE
+EXPORT OBJECT wordWrap PRIVATE
   buffer_size:INT
   buf_length:INT
   max_length:INT
@@ -10,7 +10,7 @@ EXPORT OBJECT wrapBase PRIVATE
 ENDOBJECT
 
 ->constructor
-EXPORT PROC init(buffer_length) OF wrapBase
+EXPORT PROC init(buffer_length) OF wordWrap
   self.buffer_size:=buffer_length
   self.buffer:=String(buffer_length)
   IF self.buffer=NIL THEN Raise("MEM")
@@ -18,13 +18,15 @@ EXPORT PROC init(buffer_length) OF wrapBase
   IF self.buffer=NIL THEN Raise("MEM")
 ENDPROC
 
-->abstract so that length field can be pixels or characters
-EXPORT PROC length(text) OF wrapBase IS EMPTY
+->wrapper method so that length field can be overridden as pixel width for
+->  proportional fonts or StrLen for C strings if needed
+EXPORT PROC length(text) OF wordWrap IS EstrLen(text)
 
-EXPORT PROC output(text) OF wrapBase IS EMPTY
+->second wrapper for buffered io support in AmigaOS 2+ using PutStr
+EXPORT PROC output(text) OF wordWrap IS WriteF('\s',text)
 
 ->private helper method
-PROC out_or_in(my_length) OF wrapBase
+PROC out_or_in(self:PTR TO wordWrap,my_length)
   IF my_length=0 THEN RETURN
   IF self.buf_length+my_length<self.max_length
 	self.buf_length:=self.buf_length+my_length
@@ -38,7 +40,7 @@ PROC out_or_in(my_length) OF wrapBase
   ENDIF
 ENDPROC
 
-EXPORT PROC wrap(format,var) OF wrapBase
+EXPORT PROC wrap(format,var) OF wordWrap
   DEF next_word:REG,to_go:REG
   StringF(self.buffer2,format,var)
   self.cursor:=0
@@ -51,17 +53,17 @@ EXPORT PROC wrap(format,var) OF wrapBase
 	  next_word:=InStr(self.buffer2,'-')
 	  IF next_word=-1
 		next_word:=StrLen(self.buffer2)
-		self.out_or_in(next_word)
+		out_or_in(self,next_word)
         RETURN
 	  ENDIF
     ENDIF
-    self.out_or_in(next_word)
+    out_or_in(self,next_word)
 	to_go:=StrLen(self.buffer2)-self.cursor
   ENDWHILE
 ENDPROC
 
 ->End of paragraph
-EXPORT PROC flush_wrap() OF wrapBase
+EXPORT PROC flush_wrap() OF wordWrap
   self.output(self.buffer)
   self.output('\n\n')
   SetStr(self.buffer,0)
