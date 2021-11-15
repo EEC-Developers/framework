@@ -2,7 +2,7 @@
 
 OPT MODULE
 
-MODULE 'hash/hashbase'
+MODULE 'Hash/hashBase'
 
 EXPORT OBJECT pointer_hash OF hash_base
 ENDOBJECT
@@ -14,23 +14,25 @@ ENDOBJECT
 
 PROC get_key() OF pointer_hash_link IS self.key
 
-PROC init(key) OF pointer_hash_link
-  DEF temp:REG
-  temp:=key
-  self.key:=temp
-  /*MOVEQ.L #0,r1
-  MOVE.W r0,r1
-  SWAP r0
-  EOR.W r0,r1
-  r2:=r1
-  */
-  self.hash_value:=Eor((temp AND $FFFF),Shr(temp,16))
+->constructor
+PROC init(key,parent:PTR TO pointer_hash) OF pointer_hash_link
+  SUPER self.init(key,parent)
 ENDPROC
 
-PROC key_equality(m:PTR TO hash_link) OF pointer_hash_link
-  IF self.key<>m.get_key() THEN RETURN FALSE
+PROC hash_function(key) OF pointer_hash
+  DEF temp:REG
+  temp:=key
+ENDPROC Eor((temp AND $FFFF),Shr(temp,16))
+
+PROC key_equality(m:PTR TO hash_link,k)
+  IF k<>m.get_key() THEN RETURN FALSE
 ENDPROC TRUE
 
-PROC add(link) OF pointer_hash
+PROC add(link:PTR TO pointer_hash_link) OF pointer_hash
   SUPER self.add(link)
+ENDPROC
+
+-> Constructor
+PROC init(table_size) OF pointer_hash
+  SUPER self.init_base(table_size,{key_equality})
 ENDPROC

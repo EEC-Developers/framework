@@ -9,25 +9,34 @@ Since there is a longstanding bug in the AmigaE module format that makes it chok
 ### Hash/hashbase -- global base module
 
 #### constants -- prime number sizes for hash tables
-  
+
+* hash_micro
+* hash_tiny
+* hash_small
+* hash_normal
+* hash_medium
+* hash_large
+* hash_huge
+
 #### hash_base -- abstract parent object for submodules
 
-* init -- abstract constructor
+* init_base -- abstract constructor
+* hash_function -- abstract method for hashing
 * find -- hash lookup method that returns NIL if not found
 * add -- adds a hash link to the table
 * hash_slot -- modulo method for determining table slot number
 * get_size -- returns table size, measured in slots
 * get_num_entries -- total number of items in the table
 * end_links -- method to invoke destructor on all contained objects
-* end -- destructor
+* end -- destructor for main structure but not for contained objects
+* rehash -- changes hash table to a different size
 * get_entries -- should be used by iterators only
 
 #### hash_link -- abstract parent class for hash-able objects
 
 * init -- constructor
 * get_key -- abstract getter method for key
-* hash_value -- Computed by constructor.  Treat as read-only.
-* key_equality -- abstract boolean comparison for key types
+* get_hash_value -- getter that returns the 16-bit hash value computed from the constructor.
 
 #### hash_iterator -- iterates through any child class of hash_base
 

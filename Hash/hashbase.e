@@ -4,8 +4,9 @@ OPT MODULE
 
 MODULE 'Iterator/iterator'
 
-EXPORT CONST HASH_TINY     = 5,
-             HASH_SMALL    = 31,
+EXPORT CONST HASH_MICRO    = 5,
+             HASH_TINY     = 13,
+             HASH_SMALL    = 61,
              HASH_NORMAL   = 211,
              HASH_MEDIUM   = 941,
              HASH_BIG      = 3911,
@@ -16,6 +17,7 @@ PRIVATE
   future1:INT
   size:INT
   num_entries:LONG
+  compare_key -> function pointer
   entries:PTR TO LONG
 ENDOBJECT
 
@@ -25,38 +27,45 @@ PROC get_entries() OF hash_base IS self.entries
 
 PROC get_num_entries() OF hash_base IS self.num_entries
 
+-> virtual hash function
+PROC hash_function(key) OF hash_base IS EMPTY
+
 EXPORT OBJECT hash_link PRIVATE
   next:PTR TO hash_link
   future1:INT
-PUBLIC
   hash_value:INT
 ENDOBJECT
 
--> getter
+-> getters
 PROC get_next() OF hash_link IS self.next
 
--> virtual constructor
-PROC init(key) OF hash_link IS EMPTY
+PROC get_hash_value() OF hash_link IS self.hash_value
+
+-> constructor
+PROC init(key,parent:PTR TO hash_base) OF hash_link
+  self.hash_value:=parent.hash_function(key)
+ENDPROC
 
 -> virtual getter
 PROC get_key() OF hash_link IS EMPTY
 
--> virtual method
-PROC key_equality(other:PTR TO hash_link) OF hash_link IS EMPTY
-
 -> modulo distribution method for slot selection
-PROC hash_slot(link:PTR TO hash_link) OF hash_base
+PROC hash_slot(hash_val) OF hash_base
   DEF ret
-  ret:=link.hash_value AND $7FFF -> REMOVE negative sign bit
+  ret:=hash_val AND $7FFF -> REMOVE negative sign bit
   ret:=Mod(ret,self.size)
 ENDPROC ret
 
 -> base constructor
-PROC init(tablesize) OF hash_base
+-> comparison is a function pointer of the format:
+-> comparison(x:PTR TO hash_link,key):BOOL
+PROC init_base(tablesize,comparison) OF hash_base
   DEF table:PTR TO LONG
-  self.entries:=NEW table[tablesize]
+  NEW table[tablesize]
+  self.entries:=table
   self.size:=tablesize
   self.num_entries:=0
+  self.compare_key:=comparison
 ENDPROC
 
 -> destructor
@@ -67,38 +76,41 @@ PROC end() OF hash_base
 ENDPROC
 
 -> destruct all links if desired
-PROC end_links(sizeof) OF hash_base
-  DEF a,p:PTR TO hash_link,o:PTR TO hash_link
+PROC end_links() OF hash_base
+  DEF a,p:PTR TO hash_link,
+    o:PTR TO hash_link
   FOR a:=0 TO self.size-1
     p:=self.entries[a]
-    WHILE o:=p
+    WHILE p<>NIL
+      o:=p
       p:=p.next
-      FastDispose(o,sizeof)
+      Dispose(o)
     ENDWHILE
   ENDFOR
+  self.num_entries:=0
 ENDPROC
 
--> hashes data, then tries to find entry.
+-> hashes key, then tries to find entry.
 -> returns hash_link
 PROC find(key) OF hash_base
-  DEF e,count:REG,hlink:PTR TO hash_link,r2,dummylink:PTR TO hash_link
-  NEW dummylink.init(key)
-  e:=self.entries
-  r2:=self.hash_slot(dummylink)
+  DEF hlink:REG PTR TO hash_link,index,h:REG,cmp
+  h:=self.hash_function(key)
+  cmp:=self.compare_key
+  index:=self.hash_slot(h)
   -> hashvalue found, now do a search
-  count:=e+Shl(r2,2)
-  WHILE count
-    -> link is not NIL
-    hlink:=count
-    IF hlink.key_equality(dummylink) THEN RETURN hlink
-    count:=hlink.next
+  hlink:=self.entries[index]
+  WHILE hlink<>NIL
+    IF hlink.get_hash_value()=h
+	    IF cmp(hlink,key) THEN RETURN hlink
+	ENDIF
+    hlink:=hlink.next
   ENDWHILE
 ENDPROC NIL
 
 -> add a new hash_link
 PROC add(link:PTR TO hash_link) OF hash_base
   DEF hashvalue
-  hashvalue:=self.hash_slot(link)
+  hashvalue:=self.hash_slot(link.get_hash_value())
   link.next:=self.entries[hashvalue]
   self.entries[hashvalue]:=link
   self.num_entries++
@@ -137,3 +149,17 @@ PROC next() OF hash_iterator
     ENDIF
   ENDWHILE
 ENDPROC TRUE
+
+PROC rehash(size) OF hash_base
+  DEF iter:PTR TO hash_iterator,ret:PTR TO hash_base
+  IF size=self.size THEN RETURN
+  NEW ret.init_base(size,self.compare_key)
+  NEW iter.init(self)
+  WHILE iter.next()
+    ret.add(iter.get_current_item())
+  ENDWHILE
+  Dispose(self.entries)
+  self.size:=size
+  self.entries:=ret.get_entries()
+  Dispose(ret)
+ENDPROC

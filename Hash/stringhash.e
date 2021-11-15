@@ -4,6 +4,9 @@ OPT MODULE
 
 MODULE 'hash/hashbase'
 
+EXPORT OBJECT string_hash OF hash_base
+ENDOBJECT
+
 EXPORT OBJECT string_hash_link OF hash_link
 PRIVATE
   key:PTR TO CHAR
@@ -11,11 +14,15 @@ ENDOBJECT
 
 PROC get_key() OF string_hash_link IS self.key
 
-PROC init(key) OF string_hash_link -> constructor
+->constructor
+PROC init(key,parent:PTR TO string_hash) OF string_hash_link
+  SUPER self.init(key,parent)
+ENDPROC
+
+PROC hash_function(key:PTR TO CHAR) OF string_hash
   DEF hashvalue:REG, x:REG, y:REG PTR TO CHAR, count:REG
   hashvalue:=0
   y:=key
-  self.key:=y
   count:=StrLen(y)
   -> calculate hash function
   REPEAT
@@ -25,17 +32,18 @@ PROC init(key) OF string_hash_link -> constructor
     hashvalue:=Eor(x,hashvalue)
     count--
   UNTIL count=0
-  self.hash_value:=hashvalue AND $FFFF
-ENDPROC
+ENDPROC hashvalue AND $FFFF
 
-PROC key_equality(m:PTR TO string_hash_link) OF string_hash_link
+PROC key_equality(m:PTR TO string_hash_link,k)
   DEF scratch
-  scratch:=StrCmp(m.key,self.key)
-ENDPROC scratch
-
-EXPORT OBJECT string_hash OF hash_base
-ENDOBJECT
+  scratch:=StrCmp(m.key,k)
+ENDPROC scratch=0
 
 PROC add(link:PTR TO string_hash_link) OF string_hash
   SUPER self.add(link)
+ENDPROC
+
+->constructor
+PROC init(size) OF string_hash
+  SUPER self.init_base(size,{key_equality})
 ENDPROC
