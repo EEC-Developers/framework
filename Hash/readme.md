@@ -20,7 +20,8 @@ Since there is a longstanding bug in the AmigaE module format that makes it chok
 
 #### hash_base -- abstract parent object for submodules
 
-* init_base -- abstract constructor
+* init_base -- base constructor
+* rehash -- alternate constructor that migrates hash table data to a different size hash table
 * hash_function -- abstract method for hashing
 * find -- hash lookup method that returns NIL if not found
 * add -- adds a hash link to the table
@@ -29,8 +30,8 @@ Since there is a longstanding bug in the AmigaE module format that makes it chok
 * get_num_entries -- total number of items in the table
 * end_links -- method to invoke destructor on all contained objects
 * end -- destructor for main structure but not for contained objects
-* rehash -- changes hash table to a different size
 * get_entries -- should be used by iterators only
+* get_compare_key -- should also be used only by rehash
 
 #### hash_link -- abstract parent class for hash-able objects
 
@@ -44,19 +45,19 @@ Since there is a longstanding bug in the AmigaE module format that makes it chok
 * get_current_item -- getter for item currently referenced by the iterator
 * next -- finds next item and returns TRUE or returns FALSE if end is reached
 
-### Hash/stringhash -- uses null terminated string keys
+### Hash/stringHash -- uses null terminated string keys
 
 #### string_hash -- actual hash table implementaton of abstract hash_base
 
 #### string_hash_link -- actual implementation of abstract hash_link
 
-### Hash/pointerhash -- uses pointer or LONG keys
+### Hash/pointerHash -- uses pointer or LONG keys
 
 #### pointer_hash -- actual hash table implementaton
 
 #### pointer_hash_link -- actual hash_link implementaton
 
-### Hash/listhash -- uses E-Lists as keys
+### Hash/listHash -- uses E-Lists as keys
 
 #### list_hash -- actual hash table implementation
 

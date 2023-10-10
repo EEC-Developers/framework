@@ -40,9 +40,12 @@ ENDPROC
 
 -> This local function adds and displays information about the node just added
 PROC add(link:PTR TO lister)
+	DEF junk
 	tester.add(link)
+	junk:=link.get_key()
 	WriteF('Added \d ',link.cargo)
 	WriteF('to bucket \d ',tester.hash_slot(link))
 	WriteF('with hash \h ',link.hash_value)
-	WriteF('listlen \d\n',ListLen(link.get_key()))
+	WriteF('key address \h ',junk)
+	WriteF('listlen \d\n',ListLen(junk))
 ENDPROC
