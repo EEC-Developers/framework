@@ -2,7 +2,7 @@
 
 OPT MODULE
 
-MODULE 'hash/hashbase'
+MODULE 'Hash/hashBase'
 
 EXPORT OBJECT string_hash OF hash_base
 ENDOBJECT
