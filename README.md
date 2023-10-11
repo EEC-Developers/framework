@@ -1,5 +1,8 @@
 # EEC Framework
 
+#**WARNING**
+The framework is in a state of flux at the moment and might not even compile, let alone work in any useful state.
+
 ## Description
 
 This is designed to be a minimal framework of abstract data types for Amiga-like operating systems running EEC or other AmigaE derived languages.

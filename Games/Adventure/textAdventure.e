@@ -1,10 +1,7 @@
 OPT MODULE
 
-MODULE 'Set/smallSet','Hash/stringHash','Hash/hashBase','iterator/Iterator'
-
-CONST MAXWIDTH=80
-
-DEF outbuffer[MAXWIDTH]:STRING,outbuffer2[MAXWIDTH]:STRING
+MODULE 'Set/setBase','TextUtilites/textList','TextUtilities/wordWrap',
+  'Hash/stringHash','Hash/hashBase','iterator/Iterator'
 
 EXPORT OBJECT object OF string_hash_link
   sethandle:INT
@@ -25,7 +22,7 @@ ENDOBJECT
 PROC create(parent,mask=0) OF inventory IS SUPER self.create(parent,mask)
 
 -> constructor
-PROC init(parent:PTR TO bitset,list:PTR TO LONG) OF inventory IS SUPER self.init(parent,list)
+PROC init(parent:PTR TO setBase,list:PTR TO LONG) OF inventory IS SUPER self.init(parent,list)
 
 PROC give(item:PTR TO object, destination:PTR TO inventory) OF inventory
   DEF ret:REG,item_set:PTR TO inventory
@@ -50,7 +47,7 @@ PROC get_all() OF master_list IS self.all
 
 -> constructor
 PROC init_master_list(object_list) OF master_list
-  DEF x:PTR TO bitset,y:PTR TO object,z:PTR TO inventory
+  DEF x:PTR TO setBase,y:PTR TO object,z:PTR TO inventory
   SUPER self.init(HASH_SMALL)
   NEW x.init(object_list,OFFSETOF object.sethandle)
   NEW z.create(x,x.all_mask())
@@ -150,7 +147,7 @@ PROC list(iter:PTR TO iterator,
   flush_wrap()
 ENDPROC
 
-PROC inventory_wrap(structure:PTR TO bitset,format,var)
+PROC inventory_wrap(structure:PTR TO setBase,format,var)
   wrap(format,ListItem(structure.get_items(),var))
 ENDPROC
 
@@ -161,7 +158,7 @@ PROC look() OF room
   DEF stuff:PTR TO bitset_iterator,
     exits:PTR TO hash_iterator,
     i:PTR TO inventory,
-    p:PTR TO bitset
+    p:PTR TO setBase
   i:=self.items
   p:=i.get_parent()
   NEW stuff.init(i)

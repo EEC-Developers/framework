@@ -122,6 +122,6 @@ PROC init(head:PTR TO mln_list_header) OF mln_list_reverse
   SUPER self.init(head)
 ENDPROC
 
-PROC next() OF mln_list_reverse IS SUPER.prev()
+PROC next() OF mln_list_reverse IS SUPER self.prev()
 
-PROC prev() OF mln_list_reverse is SUPER.next()
+PROC prev() OF mln_list_reverse is SUPER self.next()

@@ -1,9 +1,7 @@
 OPT PREPROCESS
 
-MODULE 'Hash/hashBase',
-  'Hash/stringHash',
-  'Set/setBase',
-  'Set/smallSet',
+MODULE 'Hash/hashBase','Hash/stringHash','Set/setBase','Set/smallSet',
+  'TextUtilities/monospacedWrap','TextUtilites/wordWrap',
   'Games/Adventure/textAdventure'
 
 ENUM ERR_NONE,ERR_FILE

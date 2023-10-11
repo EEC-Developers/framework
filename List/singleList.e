@@ -26,7 +26,7 @@ PROC init() OF single_list_header IS self.head:=NIL
 -> getters and setters
 PROC get_first() OF single_list_header IS self.head
 
-PROC set_first(node:PTR TO single_list_node) OF single_list header
+PROC set_first(node:PTR TO single_list_node) OF single_list_header
   self.head:=node
 ENDPROC
 
