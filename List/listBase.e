@@ -37,7 +37,8 @@ PROC init(head:PTR TO list_header) OF list_iterator
   self.iter:=NIL
 ENDPROC
 
-PROC next() OF list_iterator
+-> helper method
+PROC advance(self:PTR TO list_iterator)
   IF isNew
     isNew:=FALSE
 	iter:=head.get_first()
@@ -46,3 +47,5 @@ PROC next() OF list_iterator
   ENDIF
   IF iter THEN RETURN TRUE
 ENDPROC FALSE
+
+PROC next() OF list_iterator IS advance(self)

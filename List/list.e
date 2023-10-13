@@ -46,21 +46,23 @@ ENDPROC
 PROC to_mlh() OF min_list_header IS {self.head}::PTR TO mlh
 
 PROC insert_node(node:PTR TO min_list_node) OF min_list_node
-  self.prev:=node.get_prev()
+  node.set_prev:=self.prev
+  self.prev:=node
+  node.set_next(self)
+ENDPROC
+
+PROC insert(node:PTR TO min_list_node) OF min_list_header
+  self.head.insert_node(node)
+ENDPROC
+
+PROC add_node(node:PTR TO min_list_node) OF min_list_node
+  node.set_next(self.next)
   self.next:=node
   node.set_prev(self)
 ENDPROC
 
-PROC insert(node:PTR TO min_list_node) OF min_list_header
-  self.head::PTR TO min_list_node.insert_node(node)
-ENDPROC
-
 PROC add(node:PTR TO min_list_node) OF min_list_header
-  self.tail.insert_node(node)
-ENDPROC
-
-PROC add_node(node:PTR TO min_list_node) OF min_list_node
-  self.next.insert_node(node)
+  self.tailpred.add_node(node)
 ENDPROC
 
 -> Private helper function
@@ -103,7 +105,8 @@ PROC init_last(head:PTR TO min_list_header) OF min_list_iterator
   self.iter:=head.get_last()
 ENDPROC
 
-PROC prev() OF min_list_iterator
+-> private helper method
+retreat(self:PTR TO bidirectional)
   IF self.is_new
     self.is_new:=FALSE
     self.iter:=self.head.get_last()
@@ -113,15 +116,16 @@ PROC prev() OF min_list_iterator
   IF iter THEN RETURN TRUE
 ENDPROC FALSE
 
--> Reverse iterator traverses backwards
+PROC prev() OF min_list_iterator IS retreat(self)
 
-OBJECT min_list_reverse OF min_list_iterator
+-> Reverse iterator traverses backwards
+OBJECT min_list_reverse OF bidirectional
 ENDOBJECT
 
 PROC init(head:PTR TO mln_list_header) OF mln_list_reverse
   SUPER self.init(head)
 ENDPROC
 
-PROC next() OF mln_list_reverse IS SUPER self.prev()
+PROC next() OF mln_list_reverse IS retreat(self)
 
-PROC prev() OF mln_list_reverse is SUPER self.next()
+PROC prev() of min_list_reverse IS advance(self)
