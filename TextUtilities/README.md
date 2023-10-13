@@ -1,16 +1,4 @@
 # Text Utilities
-**rope may be deleted soon due to excessive allocations of rope_node structures**
-
-## Rope
-The Rope data structure queues up a list of substrings and outputs them as a single EString to avoid having to allocate, deallocate and reallocate memory to append each substring individually.
-
-### Constructors
-* init() -- the only constructor needed for the Rope itself
-* wrap(substring,length) -- creates a rope_node out of a substring and its length
-
-### Methods
-* add(node) -- adds a substring wrapped in a rope_node to the queue
-* output() -- appends all the substrings, clears the rope buffers and returns an EString as a result
 
 ## Text List
 This module contains a single function that creates a syntactically correct, punctuated list of items from an iterator.
