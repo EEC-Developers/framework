@@ -178,9 +178,9 @@ PROC next() OF bitVector_iterator
     ENDIF
     count++
     mask:=Shl(1,count AND 31)
-	IF mask=0
+    IF mask=0
       bn:=Shr(count,5)
-	ENDIF
+    ENDIF
   ENDWHILE
   self.mask:=mask
   self.count:=count
