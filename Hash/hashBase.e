@@ -2,7 +2,7 @@
 
 OPT MODULE
 
-MODULE 'Iterator/iterator','List/singleList'
+MODULE 'Iterator/iterator','List/singleList','Queue/queue'
 
 EXPORT CONST HASH_MICRO    = 5,
              HASH_TINY     = 13,
@@ -30,7 +30,7 @@ PROC get_num_entries() OF hash_base IS self.num_entries
 -> virtual hash function
 PROC hash_function(key) OF hash_base IS EMPTY
 
-EXPORT OBJECT hash_link OF single_list_node PRIVATE
+EXPORT OBJECT hash_link OF queue_node PRIVATE
   future1:INT
   hash_value:INT
 ENDOBJECT
@@ -47,10 +47,9 @@ ENDPROC
 -> virtual getter
 PROC get_key() OF hash_link IS EMPTY
 
--> use this remove method instead of on the link itself
-PROC remove(link:PTR TO hash_link) OF hash_base
+PROC remove_from_slot(slot:PTR TO queue) OF hash_base
   DEF ret
-  ret:=link.remove()
+  ret:=slot.dequeue()
   self.num_items--
 ENDPROC ret
 
@@ -65,12 +64,12 @@ ENDPROC ret
 -> comparison is a function pointer of the format:
 -> comparison(x:PTR TO hash_link,key):BOOL
 PROC init_base(tablesize,comparison) OF hash_base
-  DEF table:PTR TO LONG,count,h:PTR TO single_list_header
+  DEF table:PTR TO LONG,count,q:PTR TO queue
   NEW table[tablesize]
   self.entries:=table
   FOR count:=0 TO tablesize-1
-    NEW h.init()
-    table[count]:=h
+    NEW q.init()
+    table[count]:=q
   ENDFOR
   self.size:=tablesize
   
@@ -90,15 +89,13 @@ ENDPROC
 
 -> destruct all links if desired
 PROC end_links() OF hash_base
-  DEF a,o:PTR TO single_list_header,
+  DEF a,o:PTR TO queue,
     i:PTR TO single_list_iterator
   FOR a:=0 TO self.size-1
     o:=self.entries[a]
-    NEW i.init(o)
-    WHILE i.next()
-      END self.remove(i.get_current_item())
+    WHILE o.get_first()<>NIL
+      END self.remove_from_slot(o)
     ENDWHILE
-	END i
   ENDFOR
 ENDPROC
 
@@ -115,8 +112,11 @@ PROC find(key) OF hash_base
   WHILE hiter.next()
     hlink:=hiter.get_current_item()
     IF hlink.get_hash_value()=h
-	    IF cmp(hlink,key) THEN RETURN hlink
-	ENDIF
+      IF cmp(hlink,key)
+        END hiter
+        RETURN hlink
+      ENDIF
+    ENDIF
   ENDWHILE
 ENDPROC NIL
 
@@ -124,7 +124,7 @@ ENDPROC NIL
 PROC add(link:PTR TO hash_link) OF hash_base
   DEF hashvalue
   hashvalue:=self.hash_slot(link.get_hash_value())
-  self.entries[hashvalue].insert(link)
+  self.entries[hashvalue].enqueue(link)
   self.num_entries++
 ENDPROC
 
@@ -164,21 +164,21 @@ ENDPROC TRUE
 
 -> Constructor
 PROC rehash(size,old:PTR TO hash_base) OF hash_base
-  DEF iter:PTR TO hash_node,old_entries:PTR TO LONG,
-    count,slot:PTR TO single_list_header
+  DEF old_entries:PTR TO LONG,count,slot:PTR TO single_list_header
   CopyMem(old,self,sizeof hash_base)
-  IF size=old.get_size() THEN RETURN
+  IF size=old.get_size()
+    Dispose(old)
+    RETURN
+  ENDIF
   NEW self.table[size]
   self.size:=size
   old_entries:=old.get_entries()
   FOR count:=0 TO old.get_size()-1
     slot:=old_entries[count]
-    NEW iter.init(slot)
-    WHILE iter.next()
-      item:=old.remove(iter.get_current_item())
+    WHILE old.get_first()<>NIL
+      item:=old.remove_from_slot(slot)
       self.add(item)
     ENDWHILE
-	END iter
   ENDFOR
   END old
 ENDPROC
