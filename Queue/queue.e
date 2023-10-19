@@ -22,6 +22,7 @@ PROC init() OF queue_node IS SUPER self.init()
 
 PROC enqueue(node:PTR TO queue_node) OF queue
   IF self.front THEN self.front.set_next(node)
+  node.set_next(NIL)
   self.front:=node
 ENDPROC
 
