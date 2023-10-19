@@ -89,8 +89,7 @@ ENDPROC
 
 -> destruct all links if desired
 PROC end_links() OF hash_base
-  DEF a,o:PTR TO queue,
-    i:PTR TO single_list_iterator
+  DEF a:REG,o:REG PTR TO queue
   FOR a:=0 TO self.size-1
     o:=self.entries[a]
     WHILE o.get_first()<>NIL
@@ -102,7 +101,7 @@ ENDPROC
 -> hashes key, then tries to find entry.
 -> returns hash_link
 PROC find(key) OF hash_base
-  DEF hiter:PTR TO single_list_iter,index,h:REG,cmp,
+  DEF hiter:REG PTR TO single_list_iter,index,h:REG,cmp,
     hlink:=PTR TO hash_link
   h:=self.hash_function(key)
   cmp:=self.compare_key
