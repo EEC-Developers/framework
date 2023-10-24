@@ -1,7 +1,7 @@
 # Hash table classes
 Since there is a longstanding bug in the AmigaE module format that makes it choke on multiple return codes this makes an enhanced solution for the Class/hash module.
 
-## Hash/hashBase -- global base module
+## Hash/hashBase -- global abstract hash base module
 
 ### constants -- prime number sizes for hash tables
 
@@ -35,11 +35,10 @@ Since there is a longstanding bug in the AmigaE module format that makes it chok
 * get_key -- abstract getter method for key
 * get_hash_value -- getter that returns the 16-bit hash value computed from the constructor.
 
-### hash_iterator -- iterates through any child class of hash_base
+## unordered_hash_base -- the common abstract hash base
+This implements constructors and uses buckets whose order is not predefined by the class.
 
-* init -- constructor
-* get_current_item -- getter for item currently referenced by the iterator
-* next -- finds next item and returns TRUE or returns FALSE if end is reached
+Its substructures include unordered_hash_link and unordered_hash_iterator.
 
 ## Hash/stringHash -- uses null terminated string keys
 * string_hash -- actual hash table implementaton of abstract hash_base
@@ -52,3 +51,10 @@ Since there is a longstanding bug in the AmigaE module format that makes it chok
 ## Hash/listHash -- uses E-Lists as keys
 * list_hash -- actual hash table implementation
 * list_hash_link -- combines pointer hash and string hash functions to implement hash_link
+
+## ordered_hash_base -- alternate abstract hash base that maintains the order all items are added in
+This is the equivalent of Java's linked_hash_map. It preserves the sort order of all items added. Prioritization is one reason for using this but it is heavier than a standard unordered_hash_map because it the sort order is maintained by a separate queue internally.
+
+Its substructures include ordered_hash_link, ordered_hash_iterator, and the private, intenral queue to maintain sort order of all entries.
+
+The ordered counterparts such as the orderedStringHash and so on, use the same hash functions as the unordered ones.
