@@ -2,38 +2,38 @@
 
 OPT MODULE
 
-MODULE 'hash/hashBase'
+MODULE 'hash/hashBase','Hash/unorderedHashBase'
 
-EXPORT OBJECT list_hash_link OF hash_link
+EXPORT OBJECT elist_hash_link OF unordered_hash_link
 PRIVATE
   key:PTR TO LONG
 ENDOBJECT
 
-PROC get_key() OF list_hash_link IS self.key
+PROC get_key() OF elist_hash_link IS self.key
 
-PROC key_equality(m:PTR TO list_hash_link,k:PTR TO LONG)
+PROC key_equality(m:PTR TO elist_hash_link,k:PTR TO LONG)
   DEF scratch
   scratch:=ListCmp(m.key,k)
 ENDPROC scratch=0
 
-EXPORT OBJECT list_hash OF hash_base
+EXPORT OBJECT elist_hash OF unordered_hash_base
 ENDOBJECT
 
 -> constructor
-PROC init(tablesize) OF list_hash
+PROC init(tablesize) OF elist_hash
   SUPER self.init_base(tablesize,{key_equality})
 ENDPROC
 
-PROC add(link) OF list_hash
+PROC add(link) OF elist_hash
   SUPER self.add(link)
 ENDPROC
 
 -> link constructor
-PROC init(key:PTR TO LONG,parent:PTR TO list_hash) OF list_hash_link -> constructor
+PROC init(key:PTR TO LONG,parent:PTR TO elist_hash) OF elist_hash_link -> constructor
   SUPER self.init(key,parent)
 ENDPROC
 
-PROC hash_function(key) OF list_hash
+PROC hash_function(key) OF elist_hash
   DEF hashvalue:REG, x:REG, y:REG PTR TO LONG, count:REG
   hashvalue:=0
   y:=key

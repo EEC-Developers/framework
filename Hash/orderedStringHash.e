@@ -2,12 +2,12 @@
 
 OPT MODULE
 
-MODULE 'Hash/hashBase','unorderedHashBase'
+MODULE 'Hash/hashBase','orderedHashBase'
 
-EXPORT OBJECT string_hash OF unordered_hash_base
+EXPORT OBJECT string_hash OF ordered_hash_base
 ENDOBJECT
 
-EXPORT OBJECT string_hash_link OF unordered_hash_link
+EXPORT OBJECT string_hash_link OF ordered_hash_link
 PRIVATE
   key:PTR TO CHAR
 ENDOBJECT
