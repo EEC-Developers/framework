@@ -10,4 +10,4 @@ The SmallSet stores its memberships as a packed array of boolean flags.  This li
 
 ### BitVector
 
-The BitVector is essentially an E-List of SmallSets.  This raises the capacity of it to 65535 memberships while retaining the modest maximum storage of 2048 bytes maximum per set at the cost of raising the processing cost linearly to O(n) for most operations with a low constant term.
+The BitVector is essentially an E-List of SmallSets.  This raises the capacity of it to 65536 memberships while retaining the modest maximum storage of 2048 bytes maximum per set at the cost of raising the processing cost linearly to O(n) for most operations with a low constant term.
