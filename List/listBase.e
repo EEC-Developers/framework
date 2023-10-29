@@ -29,7 +29,22 @@ EXPORT OBJECT list_iterator OF iterator
   is_new:WORD
 ENDOBJECT
 
-PROC get_current_item() OF list_iterator IS iter
+-> getters and setters
+PROC get_header() OF list_iterator IS self.head
+
+PROC get_is_new() OF list_iterator IS self.is_new
+
+PROC set_is_new(val) OF list_iterator
+  self.is_new:=val
+ENDPROC
+
+PROC get_iter() OF list_iterator IS self.iter
+
+PROC set_iter(val:PTR TO list_node) OF list_iterator
+  self.iter:=val
+ENDPROC
+
+PROC get_current_item() OF list_iterator IS self.iter
 
 PROC init(head:PTR TO list_header) OF list_iterator
   self.is_new:=TRUE
@@ -37,15 +52,15 @@ PROC init(head:PTR TO list_header) OF list_iterator
   self.iter:=NIL
 ENDPROC
 
--> helper method
-PROC advance(self:PTR TO list_iterator)
-  IF isNew
-    isNew:=FALSE
-	iter:=head.get_first()
+PROC next() OF list_iterator
+  DEF scratch:PTR TO list_header,scratch2:PTR TO list_node
+  IF self.get_is_new()
+    self.set_is_new(FALSE)
+    scratch:=self.get_header()
+    self.set_iter(scratch.get_first())
   ELSE
-    iter:=iter.get_next()
+    scratch2:=self.get_iter()
+    self.set_iter(scratch2.get_next())
   ENDIF
-  IF iter THEN RETURN TRUE
+  IF self.get_iter() THEN RETURN TRUE
 ENDPROC FALSE
-
-PROC next() OF list_iterator IS advance(self)
