@@ -15,8 +15,8 @@ ENDOBJECT
 PROC get_key() OF pointer_hash_link IS self.key
 
 ->constructor
-PROC init(key,parent:PTR TO pointer_hash) OF pointer_hash_link
-  SUPER self.init(key,parent)
+PROC init_link(key,parent:PTR TO pointer_hash) OF pointer_hash_link
+  SUPER self.init_link(key,parent)
 ENDPROC
 
 PROC hash_function(key) OF pointer_hash

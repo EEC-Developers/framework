@@ -2,7 +2,8 @@
 
 OPT MODULE
 
-MODULE 'Iterator/iterator','List/singleList','Queue/queue'
+MODULE 'Iterator/iterator','List/singleList','List/listBase',
+  'Queue/queue'
 
 EXPORT CONST HASH_MICRO    = 5,
              HASH_TINY     = 13,
@@ -25,7 +26,15 @@ PROC get_size() OF hash_base IS self.size
 
 PROC get_entries() OF hash_base IS self.entries
 
+PROC get_comparison() OF hash_base IS self.compare_key
+
+PROC get_slot(i) OF hash_base IS self.entries[i]
+
 PROC get_num_entries() OF hash_base IS self.num_entries
+
+PROC increment_num_entries() OF hash_base IS self.num_entries++
+
+PROC decrement_num_entries() OF hash_base IS self.num_entries--
 
 -> virtual hash function
 PROC hash_function(key) OF hash_base IS EMPTY
@@ -39,7 +48,7 @@ ENDOBJECT
 PROC get_hash_value() OF hash_link IS self.hash_value
 
 -> constructor
-PROC init(key,parent:PTR TO hash_base) OF hash_link
+PROC init_link(key,parent:PTR TO hash_base) OF hash_link
   SUPER self.init()
   self.hash_value:=parent.hash_function(key)
 ENDPROC
@@ -47,7 +56,7 @@ ENDPROC
 -> virtual getter
 PROC get_key() OF hash_link IS EMPTY
 
-PROC remove_from_slot(slot:PTR TO queue) OF hash_base IS EMPTY
+PROC remove_from_slot(slot) OF hash_base IS EMPTY
 
 -> modulo distribution method for slot selection
 PROC hash_slot(hash_val) OF hash_base
@@ -63,6 +72,12 @@ ENDPROC ret
 -> is implemented in intermediate base class due to 
 -> ordered/unordered implementation as is constructor
 -> PROC rehash(size,self) OF hash_base
+PROC initializer(table:PTR TO LONG,tablesize,comparison,num=0) OF hash_base
+  self.size:=tablesize
+  self.entries:=table
+  self.num_entries:=num
+  self.compare_key:=comparison
+ENDPROC
 
 -> destructor
 PROC end() OF hash_base
@@ -76,11 +91,12 @@ ENDPROC
 
 -> destruct all links if desired
 PROC end_links() OF hash_base
-  DEF a:REG,o:REG PTR TO queue
+  DEF a:REG,o:REG PTR TO queue,s:REG PTR TO hash_link
   FOR a:=0 TO self.size-1
     o:=self.entries[a]
     WHILE o.get_first()<>NIL
-      END self.remove_from_slot(o)
+      s:=self.remove_from_slot(o)
+      END s
     ENDWHILE
   ENDFOR
 ENDPROC
@@ -88,8 +104,8 @@ ENDPROC
 -> hashes key, then tries to find entry.
 -> returns hash_link
 PROC find(key) OF hash_base
-  DEF hiter:REG PTR TO single_list_iter,index,h:REG,cmp,
-    hlink:=PTR TO hash_link
+  DEF hiter:REG PTR TO list_iterator,index,h:REG,cmp,
+    hlink:PTR TO hash_link
   h:=self.hash_function(key)
   cmp:=self.compare_key
   index:=self.hash_slot(h)
@@ -107,4 +123,4 @@ PROC find(key) OF hash_base
 ENDPROC NIL
 
 -> add a new hash_link
-PROC add(link:PTR TO hash_link) OF hash_base IS EMPTY
+PROC add(link) OF hash_base IS EMPTY

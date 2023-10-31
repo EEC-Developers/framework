@@ -2,7 +2,7 @@
 
 OPT MODULE
 
-MODULE 'Hash/hashBase','unorderedHashBase'
+MODULE 'Hash/hashBase','Hash/unorderedHashBase'
 
 EXPORT OBJECT string_hash OF unordered_hash_base
 ENDOBJECT
@@ -15,8 +15,8 @@ ENDOBJECT
 PROC get_key() OF string_hash_link IS self.key
 
 ->constructor
-PROC init(key,parent:PTR TO string_hash) OF string_hash_link
-  SUPER self.init(key,parent)
+PROC init_link(key,parent:PTR TO string_hash) OF string_hash_link
+  SUPER self.init_link(key,parent)
 ENDPROC
 
 PROC hash_function(key:PTR TO CHAR) OF string_hash
@@ -25,13 +25,13 @@ PROC hash_function(key:PTR TO CHAR) OF string_hash
   y:=key
   count:=StrLen(y)
   -> calculate hash function
-  REPEAT
+  WHILE count>0
     ->ROL.W #4,hashvalue
     hashvalue:=Shr(hashvalue,12) OR Shl(hashvalue,4) AND $FFFF
     x:=y[]++
     hashvalue:=Eor(x,hashvalue)
     count--
-  UNTIL count=0
+  ENDWHILE
 ENDPROC hashvalue AND $FFFF
 
 PROC key_equality(m:PTR TO string_hash_link,k)

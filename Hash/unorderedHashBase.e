@@ -2,7 +2,8 @@
 
 OPT MODULE
 
-MODULE 'Iterator/iterator','List/singleList'
+MODULE 'Iterator/iterator','List/singleList','List/listBase',
+  'Hash/hashBase'
 
 EXPORT OBJECT unordered_hash_base OF hash_base
 ENDOBJECT
@@ -10,35 +11,32 @@ ENDOBJECT
 EXPORT OBJECT unordered_hash_link OF hash_link
 ENDOBJECT
 
-PROC remove_from_slot(slot:PTR TO queue) OF unordered_hash_base
+PROC remove_from_slot(slot:PTR TO single_list_header) OF unordered_hash_base
   DEF ret
-  ret:=slot.removee_first()
-  self.num_items--
+  ret:=slot.remove_first()
+  self.decrement_num_entries()
 ENDPROC ret
-
 
 -> base constructor
 -> comparison is a function pointer of the format:
 -> comparison(x:PTR TO hash_link,key):BOOL
-PROC init_base(tablesize,comparison) OF hash_base
+PROC init_base(tablesize,comparison) OF unordered_hash_base
   DEF table:PTR TO LONG,count,q:PTR TO single_list_header
   NEW table[tablesize]
-  self.entries:=table
   FOR count:=0 TO tablesize-1
     NEW q.init()
     table[count]:=q
   ENDFOR
-  self.size:=tablesize
-  self.num_entries:=0
-  self.compare_key:=comparison
+  SUPER self.initializer(table,tablesize,comparison)
 ENDPROC
 
 -> add a new hash_link
 PROC add(link:PTR TO hash_link) OF unordered_hash_base
-  DEF hashvalue
+  DEF hashvalue,scratch:PTR TO single_list_header
   hashvalue:=self.hash_slot(link.get_hash_value())
-  self.entries[hashvalue].insert_first(link)
-  self.num_entries++
+  scratch:=self.get_slot(hashvalue)
+  scratch.insert(link)
+  self.increment_num_entries()
 ENDPROC
 
 -> iterator base class
@@ -47,23 +45,22 @@ PRIVATE
   col
   n
   table:PTR TO LONG
-  i:PTR TO single_list_iterator
+  i:PTR TO list_iterator
 ENDOBJECT
 
 -> iterator constructor
-PROC init(t:PTR TO hash_base) OF hash_iterator
+PROC init(t:PTR TO hash_base) OF unordered_hash_iterator
   self.n:=t.get_size()
   self.table:=t.get_entries()
   self.col:=0
   NEW self.i.init(self.table[0])
-  self.item:=NIL
 ENDPROC
 
-PROC get_current_item() OF hash_iterator
+PROC get_current_item() OF unordered_hash_iterator
 ENDPROC self.i.get_current_item()
 
 -> advance iterator to the next item
-PROC next() OF hash_iterator
+PROC next() OF unordered_hash_iterator
   -> row advance
   WHILE self.i.next()=FALSE
     -> column advance
@@ -77,18 +74,23 @@ ENDPROC TRUE
 
 -> Constructor
 PROC rehash(size,old:PTR TO unordered_hash_base) OF unordered_hash_base
-  DEF old_entries:PTR TO LONG,count,slot:PTR TO single_list_header
-  CopyMem(old,self,sizeof hash_base)
+  DEF count:REG,slot:REG PTR TO single_list_header,table:REG PTR TO LONG,
+    item:REG PTR TO unordered_hash_link
   IF size=old.get_size()
+    SUPER self.initializer(old.get_entries(),old.get_size(),
+      old.get_comparison(),old.get_num_entries())
     Dispose(old)
     RETURN
   ENDIF
-  NEW self.table[size]
-  self.size:=size
-  old_entries:=old.get_entries()
+  NEW table[size]
+  FOR count:=0 TO size-1
+    NEW slot.init()
+    table[count]:=slot
+  ENDFOR
+  SUPER self.initializer(table,size,old.get_comparison())
   FOR count:=0 TO old.get_size()-1
-    slot:=old_entries[count]
-    WHILE old.get_first()<>NIL
+    slot:=old.get_slot(count)
+    WHILE slot.get_first()<>NIL
       item:=old.remove_from_slot(slot)
       self.add(item)
     ENDWHILE

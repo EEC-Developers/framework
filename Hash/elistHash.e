@@ -29,8 +29,8 @@ PROC add(link) OF elist_hash
 ENDPROC
 
 -> link constructor
-PROC init(key:PTR TO LONG,parent:PTR TO elist_hash) OF elist_hash_link -> constructor
-  SUPER self.init(key,parent)
+PROC init_link(key:PTR TO LONG,parent:PTR TO elist_hash) OF elist_hash_link
+  SUPER self.init_link(key,parent)
 ENDPROC
 
 PROC hash_function(key) OF elist_hash
@@ -40,12 +40,12 @@ PROC hash_function(key) OF elist_hash
   count:=ListLen(y)
   IF count=0 THEN Raise("ARGS")
   -> calculate hash function
-  REPEAT
+  WHILE count>0
     ->ROL.W #4,hashvalue
     hashvalue:=Shr(hashvalue,12) OR Shl(hashvalue,4) AND $FFFF
     x:=y[]++
     x:=Eor(x,Shr(x,16)) AND $FFFF
     hashvalue:=Eor(x,hashvalue)
     count--
-  UNTIL count=0
+  ENDWHILE
 ENDPROC hashvalue AND $FFFF
