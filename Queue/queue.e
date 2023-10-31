@@ -14,7 +14,7 @@ ENDOBJECT
 -> Constructor
 PROC init() OF queue
   SUPER self.init()
-  front:=NIL
+  self.front:=NIL
 ENDPROC
 
 -> Constructor
@@ -26,4 +26,4 @@ PROC enqueue(node:PTR TO queue_node) OF queue
   self.front:=node
 ENDPROC
 
-PROC dequeue() OF queue IS self.remove_first()::queue_node
+PROC dequeue() OF queue IS self.remove_first()
