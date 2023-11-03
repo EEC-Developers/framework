@@ -1,9 +1,6 @@
-all_deps="Iterator/iterator.m Iterator/bidirectional.m List/listBase.m List/singleList.m List/list.m Set/setBase.m Set/smallSet.m Set/bitVector.m Hash/hashBase.m Hash/unorderedHashBase.m Hash/stringHash.m Hash/pointerHash.m Hash/listHash.m Hash/orderedHashBase.m Hash/orderedStringHash.m Hash/orderedPointerHash.m Hash/OrderedElistHash.m"
+e=evo
 
-all: $(all_deps)
-
-install: $(all_deps)
-	copy #?.m emodules: CLONE ALL
+all: Iterator/iterator.m Iterator/bidirectional.m List/listBase.m List/singleList.m List/list.m Set/setBase.m Set/smallSet.m Set/bitVector.m Hash/hashBase.m Hash/unorderedHash.m Hash/orderedHash.m TextUtils/textList.m TextUtils/wordWrap.m Games/Adventure/textAdventure.m
 
 Iterator/iterator.m: Iterator/iterator.e
 	$(e) Iterator/iterator.e
@@ -35,26 +32,14 @@ Queue/queue.m: Queue/queue.e List/listBase.m List/singleList.m Iterator/iterator
 Hash/hashBase.m: Hash/hashBase.e List/singleList.m List/listBase.m Iterator/iterator.m
 	$(e) Hash/hashBase.e
 
-Hash/unorderedHashBase.m: Hash/unorderedHashBase.e Hash/hashBase.m List/singleList.m List/listBase.m Iterator/iterator.m
-	$(e) Hash/unorderedHashBase.e
+Hash/unorderedHash.m: Hash/unorderedHash.e Hash/hashBase.m List/singleList.m List/listBase.m Iterator/iterator.m
+	$(e) Hash/unorderedHash.e
 
-Hash/orderedHashBase.m: Hash/orderedHashBase.e Hash/hashBase.m Queue/queue.m List/singleList.m List/listBase.m Iterator/iterator.m
-	$(e) Hash/orderedHashBase.e
-
-Hash/stringHash.m: Hash/stringHash.e Hash/unorderedHashBase.m Hash/hashBase.m List/listBase.m
-	$(e) Hash/stringHash.e
-
-Hash/pointerHash.m: Hash/pointerHash.e Hash/unorderedHashBase.m Hash/hashBase.m List/listBase.m
-	$(e) Hash/pointerHash.e
-
-Hash/elistHash.m: Hash/elistHash.e Hash/unorderedHashBase.m Hash/hashBase.m List/listBase.m
-	$(e) Hash/elistHsah.e
-
-Hash/orderedElistHash.m: Hash/orderedElistHash.e Hash/orderedHashBase.m Queue/queue.m List/singleList.m List/listBase.m Iterator/iterator.m
-	$(e) Hash/orderedListHash.e
+Hash/orderedHash.m: Hash/orderedHash.e Hash/hashBase.m Queue/queue.m List/singleList.m List/listBase.m Iterator/iterator.m
+	$(e) Hash/orderedHash.e
 
 TextUtilities/textList.m: TextUtilities/textList.e Iterator/iterator.m
-	$(e) TextUtilites.e
+	$(e) TextUtilites/textList.e
 
 TextUtilites/wordWrap.m: TextUtilites/wordWrap.e Iterator/iterator.m
 	$(e) TextUtilites/wordWrap.e
