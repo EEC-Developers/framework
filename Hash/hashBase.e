@@ -25,6 +25,7 @@ PRIVATE
   num_entries:LONG
   compare_key -> function pointer
   hash_func -> function pointer
+  get_key -> function pointer
   entries:PTR TO LONG
 ENDOBJECT
 
@@ -41,6 +42,8 @@ PROC get_comparison() OF hash_base IS self.compare_key
 
 PROC get_hash_function() OF hash_base IS self.hash_func
 
+PROC get_key_get() OF hash_base IS self.get_key
+
 PROC increment_num_entries() OF hash_base IS self.num_entries++
 
 PROC decrement_num_entries() OF hash_base IS self.num_entries--
@@ -51,28 +54,25 @@ EXPORT OBJECT hash_link OF single_list_node PRIVATE
   future1:INT
   hash_value:INT
   value
-  key_getter -> function pointer
 ENDOBJECT
 
 -> getters
 PROC get_hash_value() OF hash_link IS self.hash_value
 
-PROC get_key() OF hash_link IS self.key_getter(self)
-
 PROC get_value() OF hash_link IS self.value
 
 -> other hash_base method wrappers
-PROC compare(key,key2) OF hash_base IS self.compare_key(key,key2)
+PROC compare(link,key) OF hash_base
+ENDPROC self.compare_key(self.get_key(link),key)
 
 PROC hash_function(link:PTR TO hash_link) OF hash_base
   DEF hasher
   hasher:=self.hash_func
-ENDPROC hasher(link.get_key())
+ENDPROC hasher(self.get_key(link))
 
 -> constructor
 PROC init_link(key,parent:PTR TO hash_base,value) OF hash_link
   SUPER self.init()
-  self.key_getter:=key
   self.hash_value:=parent.hash_function(key)
   self.value:=value
 ENDPROC
@@ -91,10 +91,11 @@ ENDPROC ret
 -> ordered/unordered implementation as is constructor
 -> PROC rehash(size,self) OF hash_base
 PROC initializer(table:PTR TO LONG,tablesize,
-    comparison,hash_func,num=0) OF hash_base
+    get_key,comparison,hash_func,num=0) OF hash_base
   self.size:=tablesize
   self.entries:=table
   self.num_entries:=num
+  self.get_key:=get_key
   self.compare_key:=comparison
   self.hash_func:=hash_func
 ENDPROC
@@ -134,7 +135,7 @@ PROC find(key) OF hash_base
   WHILE iter.next()
     link:=iter.get_current_item()
     IF link.get_hash_value()=h
-      IF cmp(link.get_key(),key)
+      IF cmp(self.get_key(link),key)
         END iter
         RETURN link
       ENDIF

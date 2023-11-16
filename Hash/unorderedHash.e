@@ -8,9 +8,6 @@ MODULE 'Iterator/iterator','List/singleList','List/listBase',
 EXPORT OBJECT unordered_hash OF hash_base
 ENDOBJECT
 
-EXPORT OBJECT unordered_hash_link OF hash_link
-ENDOBJECT
-
 PROC remove_from_slot(slot:PTR TO single_list_header) OF unordered_hash
   DEF ret
   ret:=slot.remove_first()
@@ -19,14 +16,14 @@ ENDPROC ret
 
 -> base constructor
 ->   See hashBase.e for more inromation about function pointers
-PROC init_base(tablesize,comparison,hash_func) OF unordered_hash
+PROC init_base(tablesize,get_key,comparison,hash_func) OF unordered_hash
   DEF table:PTR TO LONG,count,q:PTR TO single_list_header
   NEW table[tablesize]
   FOR count:=0 TO tablesize-1
     NEW q.init()
     table[count]:=q
   ENDFOR
-  SUPER self.initializer(table,tablesize,comparison,hash_func)
+  SUPER self.initializer(table,tablesize,get_key,comparison,hash_func)
 ENDPROC
 
 -> add a new hash_link
@@ -74,7 +71,7 @@ ENDPROC TRUE
 -> Constructor
 PROC rehash(size,old:PTR TO unordered_hash) OF unordered_hash
   DEF count:REG,slot:REG PTR TO single_list_header,table:REG PTR TO LONG,
-    item:REG PTR TO unordered_hash_link
+    item:REG PTR TO hash_link
   IF size=old.get_size()
     SUPER self.initializer(old.get_entries(),old.get_size(),
       old.get_comparison(),old.get_hash_function(),
@@ -87,8 +84,8 @@ PROC rehash(size,old:PTR TO unordered_hash) OF unordered_hash
     NEW slot.init()
     table[count]:=slot
   ENDFOR
-  SUPER self.initializer(table,size,old.get_comparison(),
-    old.get_hash_function())
+  SUPER self.initializer(table,size,old.get_key_get(),
+    old.get_comparison(),old.get_hash_function())
   FOR count:=0 TO old.get_size()-1
     slot:=old.get_slot(count)
     WHILE slot.get_first()<>NIL

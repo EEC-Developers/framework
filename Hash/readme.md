@@ -1,5 +1,5 @@
 # Hash table classes
-Since there is a longstanding bug in the AmigaE module format that makes it choke on multiple return codes this makes an enhanced solution for the Class/hash module.
+Since there is a longstanding bug in the AmigaE module format that makes it choke on multiple return codes, this makes an enhanced solution for the Class/hash module.
 
 ## Hash/hashBase
 This is the abstract base class that all other hash implementations use.
@@ -34,6 +34,7 @@ These can be used individually or collectively using compositeHash. See the test
 * end_links -- method to invoke destructor on all hash links
 * end -- destructor for main structure and links
 * get_entries -- should be used by iterators only
+* get_key_get -- internally used only used by rehash
 * get_compare_key -- should also be used only by rehash
 * remove_from_slot -- for internal use by end_links and rehash
 
@@ -41,16 +42,15 @@ These can be used individually or collectively using compositeHash. See the test
 This is the class for designating hashed objects. The hash_link has a one-to-one relationship with the value, which can be either a long or a pointer to an object.
 
 * init_link -- constructor
-* get_key -- getter method for key that wraps dependency injected function
 * get_value -- getter for long value or pointer to the structure being hash searched
 * get_hash_value -- getter that returns the 16-bit hash value computed from the constructor.
 
 ## unordered_hash
 This is the common hash map.  It implements constructors and uses links whose order is not predefined by the class.
 
-Its substructures include unordered_hash_link and unordered_hash_iterator.
+Its substructure is the unordered_hash_iterator.
 
-## ordered_hash_base
-This is the alternate abstract hash base that maintains the order all items are added in. It is the equivalent of Java's linked_hash_map. It preserves the sort order of all items added. Prioritization is one reason for using this but it is heavier than a standard unordered_hash_map because it the sort order is maintained by a separate queue internally.
+## ordered_hash
+This is the alternate hash base that maintains the order all items are added in. It is the equivalent of Java's linked_hash_map. It preserves the sort order of all items added. Prioritization is one reason for using this but it is heavier than a standard unordered_hash_map because it the sort order is maintained by a separate queue internally.
 
-Its substructures include ordered_hash_link, ordered_hash_iterator, and the private, intenral queue to maintain sort order of all entries.
+Its substructures include ordered_hash_iterator and the private, internal queue to maintain sort order of all entries.

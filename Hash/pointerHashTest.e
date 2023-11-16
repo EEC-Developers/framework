@@ -1,30 +1,32 @@
 -> Pointer Hash Test
 
-MODULE 'Hash/hashBase','Hash/unorderedHashBase','Hash/pointerHash'
+MODULE 'Hash/hashBase','Hash/unorderedHash','Iterator/iterator'
 
-OBJECT test OF pointer_hash
+OBJECT lister OF hash_link
+PUBLIC
+  my_key:LONG
 ENDOBJECT
 
-OBJECT lister OF pointer_hash_link
-  cargo:LONG
-ENDOBJECT
+-> key getter
+PROC key_get(x:PTR TO lister) IS x.my_key
 
-PROC get_cargo() OF lister IS self.cargo
+-> comparison
+PROC cmp(l,k) IS key_get(l)=k
 
 -> constructor
-PROC build(x:PTR TO LONG,parent:PTR TO pointer_hash,y) OF lister
-  SUPER self.init_link(x,parent)
-  self.cargo:=y
+PROC build(x,parent:PTR TO unordered_hash,y) OF lister
+  self.my_key:=x
+  SUPER self.init_link(parent,y)
 ENDPROC
 
 PROC main() HANDLE
-DEF tester:PTR TO test,
+DEF tester:PTR TO unordered_hash,
     iter:PTR TO unordered_hash_iterator,
     link:PTR TO lister,
     link2:PTR TO lister,
     link3:PTR TO lister,
 	scratch:PTR TO lister
-  NEW tester.init(HASH_TINY)
+  NEW tester.init(HASH_TINY,{key_get},{cmp},{longHash})
   NEW link.build($01234567,tester,1)
   WriteF('initialized\n')
   add(tester,link)
@@ -36,7 +38,7 @@ DEF tester:PTR TO test,
   WHILE iter.next()
     scratch:=iter.get_current_item()
     WriteF('key value pair of \h \d\n',
-      scratch.get_key(),scratch.get_cargo())
+      key_get(scratch),scratch.get_value())
   ENDWHILE
 EXCEPT
   SELECT exception
@@ -52,8 +54,8 @@ PROC add(tester:PTR TO test,link:PTR TO lister)
   DEF thing
   tester.add(link)
   thing:=link.get_hash_value()
-  WriteF('Added \d ',link.cargo)
+  WriteF('Added \d ',link.get_value())
   WriteF('to bucket \d ',tester.hash_slot(thing))
   WriteF('with hash \h ',thing)
-  WriteF('and key is \h.\n',link.get_key())
+  WriteF('and key is \h.\n',key_get(link))
 ENDPROC
