@@ -20,11 +20,13 @@ PROC main() HANDLE
   ]
   NEW list.init()
   FOR count:=0 TO ListLen(content)
-    WriteF('Christmas day number \d.\n',count+1)
     IF count>0
+      WriteF('Christmas day number \d.\n',count)
       NEW node.init()
       node.item:=ListItem(content,count-1)
       list.insert(node)
+    ELSE
+      WriteF('On Christmas Eve\n')
     ENDIF
     NEW iter.init(list)
     WriteF('You received ')
@@ -35,7 +37,7 @@ PROC main() HANDLE
       DEFAULT; Raise(TEST_UNDEFINED)
     ENDSELECT
     WriteF('\n')
-	END iter
+    END iter
   ENDFOR
 EXCEPT
   SELECT exception
