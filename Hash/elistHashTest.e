@@ -1,16 +1,16 @@
 
 
-MODULE 'Hash/hashbase', 'Hash/unorderedHash','Iterator/iterator'
+MODULE 'Hash/hashbase','Hash/unorderedHash','Iterator/iterator'
 
 OBJECT tester OF hash_link
   my_key:PTR TO LONG
 ENDOBJECT
 
 DEF lister:PTR TO unordered_hash,
-	iter:PTR TO unordered_hash_iterator,
-	link:PTR TO tester,
-	link2:PTR TO tester,
-	link3:PTR TO tester
+  iter:PTR TO unordered_hash_iterator,
+  link:PTR TO tester,
+  link2:PTR TO tester,
+  link3:PTR TO tester
 
 -> key getter function
 PROC key_get(x:PTR TO tester) IS x.my_key
@@ -42,22 +42,22 @@ PROC main() HANDLE
       key_get(scratch),scratch.get_value())
   ENDWHILE
 EXCEPT
-	SELECT exception
-		CASE "MEM"
-			WriteF('Out of memory.')
-		DEFAULT
-			WriteF('An unknown error occurred.')
-	ENDSELECT
+  SELECT exception
+    CASE "MEM"
+      WriteF('Out of memory.')
+    DEFAULT
+      WriteF('An unknown error occurred.')
+  ENDSELECT
 ENDPROC
 
 -> This local function adds and displays information about the node just added
 PROC add(link:PTR TO tester)
-	DEF junk
-	lister.add(link)
-	junk:=key_get(link)
-	WriteF('Added \d ',link.get_value())
-	WriteF('to bucket \d ',lister.hash_slot(link))
-	WriteF('with hash \h ',link.get_hash_value())
-	WriteF('key address \h ',junk)
-	WriteF('listlen \d\n',ListLen(junk))
+  DEF junk
+  lister.add(link)
+  junk:=key_get(link)
+  WriteF('Added \d ',link.get_value())
+  WriteF('to bucket \d ',lister.hash_slot(link))
+  WriteF('with hash \h ',link.get_hash_value())
+  WriteF('key address \h ',junk)
+  WriteF('listlen \d\n',ListLen(junk))
 ENDPROC
