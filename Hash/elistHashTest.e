@@ -25,8 +25,9 @@ ENDPROC
 PROC cmp(l,k) IS ListCmp(key_get(l),k)
 
 PROC main() HANDLE
-  DEF list_val,test:PTR TO unordered_hash,scratch:PTR TO tester
-  NEW test.init_base(HASH_TINY,{key_get},{cmp},{composite_hash})
+  DEF list_val,scratch:PTR TO tester
+
+  NEW lister.init_base(HASH_TINY,{key_get},{cmp},{composite_hash})
   NEW link.build([$12345678,$BCDEF0,$0F0F0F0F,$F0F0F0F0],1)
   WriteF('initialized\n')
   add(link)
@@ -34,11 +35,11 @@ PROC main() HANDLE
   add(link2)
   NEW link3.build([1],3)
   add(link3)
-  NEW iter.init(test)
+  NEW iter.init(lister)
   WHILE iter.next()
     scratch:=iter.get_current_item()
     list_val:=key_get(scratch)
-    WriteF('key value pair of \s \d\n',
+    WriteF('key value pair of \h \d\n',
       key_get(scratch),scratch.get_value())
   ENDWHILE
 EXCEPT
@@ -51,13 +52,13 @@ EXCEPT
 ENDPROC
 
 -> This local function adds and displays information about the node just added
-PROC add(link:PTR TO tester)
+PROC add(linked:PTR TO tester)
   DEF junk
-  lister.add(link)
-  junk:=key_get(link)
-  WriteF('Added \d ',link.get_value())
-  WriteF('to bucket \d ',lister.hash_slot(link))
-  WriteF('with hash \h ',link.get_hash_value() AND $FFFF)
+  lister.add(linked)
+  junk:=key_get(linked)
+  WriteF('Added \d ',linked.get_value())
+  WriteF('to bucket \d ',lister.hash_slot(linked))
+  WriteF('with hash \d ',linked.get_hash_value() AND $FFFF)
   WriteF('key address \h ',junk)
   WriteF('listlen \d\n',ListLen(junk))
 ENDPROC

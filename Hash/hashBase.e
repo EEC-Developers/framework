@@ -69,16 +69,13 @@ PROC get_value() OF hash_link IS self.value
 PROC compare(link,key) OF hash_base
 ENDPROC self.compare_key(self.get_key(link),key)
 
-PROC hash_function(link:PTR TO hash_link) OF hash_base
-  DEF hasher
-
-  hasher:=self.hash_func
-ENDPROC hasher(self.get_key(link))
-
 -> constructor
 PROC init_link(key,parent:PTR TO hash_base,value) OF hash_link
+  DEF hash_function
+
   SUPER self.init()
-  self.hash_value:=parent.hash_function(key) AND $FFFF
+  hash_function:=parent.get_hash_function()
+  self.hash_value:=hash_function(key)
   self.value:=value
 ENDPROC
 
@@ -182,7 +179,7 @@ EXPORT PROC composite_hash(key)
   hashvalue:=0
   count:=ListLen(key)
   WHILE count>0
-    count--
-    hashvalue:=Eor(hashvalue,key[count])
+    count-=1
+    hashvalue:=Eor(hashvalue,ListItem(key,count))
   ENDWHILE
 ENDPROC Eor(hashvalue AND $FFFF,Shr(hashvalue,16))

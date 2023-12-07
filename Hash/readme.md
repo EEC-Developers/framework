@@ -25,7 +25,7 @@ These can be used individually or collectively using compositeHash. See the test
 ### methods
 * initializer -- base constructor
 * rehash -- alternate constructor that migrates hash table data to a different size hash table
-* hash_function -- dependency injected function for hashing
+* get_hash_function -- getter of dependency injected function for hashing
 * find -- hash lookup method that returns NIL if not found or a pointer to hash link if found
 * add -- adds a hash link to the table
 * hash_slot -- modulo method for determining table slot number
