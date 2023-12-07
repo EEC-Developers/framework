@@ -6,8 +6,7 @@ MODULE 'Iterator/iterator'
 EXPORT OBJECT set
 ENDOBJECT
 
-EXPORT OBJECT subset
-PRIVATE
+EXPORT OBJECT subset PRIVATE
   parent:PTR TO set
 ENDOBJECT
 

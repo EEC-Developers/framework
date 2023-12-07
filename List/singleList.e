@@ -48,6 +48,6 @@ PROC end() OF single_list_header
     iter:=self.get_first()
     IF iter=NIL THEN RETURN
     iter:=self.remove_first()
-    iter.end()
+    END iter
   ENDLOOP
 ENDPROC

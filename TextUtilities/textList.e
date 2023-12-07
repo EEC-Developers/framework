@@ -23,10 +23,10 @@ EXPORT PROC text_list(iter:PTR TO iterator,generator)
         item2:=iter.get_current_item()
       ENDWHILE
       generator('\s and ',item1)
-      generator('\s. ',item2)
+      generator('\s',item2)
     ELSE
-	  isSingular:=TEXT_SINGULAR
-      generator('\s. ',item1)
+      isSingular:=TEXT_SINGULAR
+      generator('\s',item1)
     ENDIF
   ELSE
     isSingular:=TEXT_EMPTY

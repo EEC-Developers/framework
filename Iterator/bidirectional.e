@@ -4,7 +4,7 @@ OPT MODULE
 
 MODULE 'Iterator/iterator'
 
-OBJECT bidirectional OF iterator
+EXPORT OBJECT bidirectional OF iterator
 ENDOBJECT
 
 PROC prev() OF bidirectional IS EMPTY

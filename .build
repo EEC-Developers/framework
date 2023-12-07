@@ -1,4 +1,6 @@
-all: Iterator/iterator.m Iterator/bidirectional.m List/listBase.m List/singleList.m List/list.m Set/setBase.m Set/smallSet.m Set/bitVector.m Hash/hashBase.m Hash/stringHash.m Hash/pointerHash.m Hash/listHash.m
+e=evo
+
+all: Iterator/iterator.m Iterator/bidirectional.m List/listBase.m List/singleList.m List/list.m Set/setBase.m Set/smallSet.m Set/bitVector.m Hash/hashBase.m Hash/unorderedHash.m Hash/orderedHash.m TextUtils/textList.m TextUtils/wordWrap.m Games/Adventure/textAdventure.m
 
 Iterator/iterator.m: Iterator/iterator.e
 	$(e) Iterator/iterator.e
@@ -24,23 +26,20 @@ Set/smallSet.m: Set/smallSet.e Iterator/iterator.m
 Set/bitVector.m: Set/bitVector.e Set/setBase.m Iterator/iterator.m
 	$(e) Set/bitVector.e
 
-Hash/hashBase.m: Hash/hashBase.e List/singleList.m List/listBase.m Iterator/iterator.m
-	$(e) Hash/hashBase.e
-
-Hash/stringHash.m: Hash/stringHash.e Hash/hashBase.m List/listBase.m
-	$(e) Hash/stringHash.e
-
-Hash/pointerHash.m: Hash/pointerHash.e Hash/hashBase.m List/listBase.m
-	$(e) Hash/pointerHash.e
-
-Hash/listHash.m: Hash/listHash.e Hash/hashBase.m List/listBase.m
-	$(e) Hash/listHsah.e
-
 Queue/queue.m: Queue/queue.e List/listBase.m List/singleList.m Iterator/iterator.m
 	$(e) Queue/queue.e
 
+Hash/hashBase.m: Hash/hashBase.e List/singleList.m List/listBase.m Iterator/iterator.m
+	$(e) Hash/hashBase.e
+
+Hash/unorderedHash.m: Hash/unorderedHash.e Hash/hashBase.m List/singleList.m List/listBase.m Iterator/iterator.m
+	$(e) Hash/unorderedHash.e
+
+Hash/orderedHash.m: Hash/orderedHash.e Hash/hashBase.m Queue/queue.m List/singleList.m List/listBase.m Iterator/iterator.m
+	$(e) Hash/orderedHash.e
+
 TextUtilities/textList.m: TextUtilities/textList.e Iterator/iterator.m
-	$(e) TextUtilites.e
+	$(e) TextUtilites/textList.e
 
 TextUtilites/wordWrap.m: TextUtilites/wordWrap.e Iterator/iterator.m
 	$(e) TextUtilites/wordWrap.e

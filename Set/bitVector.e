@@ -30,8 +30,7 @@ PROC get_num_buckets() OF bitVector IS self.numBuckets
 PROC init(itemlist:PTR TO LONG,i_host) OF bitVector
   DEF y:REG,iter:PTR TO LONG
   y:=ListLen(itemlist)-1
-  IF y<0 THEN Raise("ARGS")
-  IF y=0 THEN Raise("bset")
+  IF y<=0 THEN Raise("bset")
   self.items:=itemlist
   self.lastitem:=y
   self.offset:=i_host
@@ -73,7 +72,7 @@ PROC init(parentSet:PTR TO bitVector,members) OF maskList -> constructor
   SUPER self.baseInit(parentSet)
   self.mask:=List(parentSet.get_num_buckets())
   iter:=ListLen(members)
-  IF iter=0 THEN Raise('ARGS')
+  IF iter=0 THEN Raise('bset')
   REPEAT
     iter--
     x:=ListItem(members,iter)

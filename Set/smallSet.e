@@ -26,8 +26,7 @@ PROC get_last_item() OF smallSet IS self.lastitem
 PROC init(itemlist:PTR TO LONG,i_host) OF smallSet
   DEF y:REG,iter:PTR TO LONG
   y:=ListLen(itemlist)-1
-  IF y<0 THEN Raise("ARGS")
-  IF y>31 OR y=0 THEN Raise("bset")
+  IF y>31 OR y<=0 THEN Raise("bset")
   self.items:=itemlist
   self.lastitem:=y
   self.offset:=i_host
