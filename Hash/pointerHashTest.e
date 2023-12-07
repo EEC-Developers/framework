@@ -16,7 +16,7 @@ PROC cmp(l,k) IS key_get(l)=k
 -> constructor
 PROC build(x,parent:PTR TO unordered_hash,y) OF lister
   self.my_key:=x
-  SUPER self.init_link(parent,y)
+  SUPER self.init_link(x,parent,y)
 ENDPROC
 
 PROC main() HANDLE
@@ -25,8 +25,8 @@ DEF tester:PTR TO unordered_hash,
     link:PTR TO lister,
     link2:PTR TO lister,
     link3:PTR TO lister,
-	scratch:PTR TO lister
-  NEW tester.init(HASH_TINY,{key_get},{cmp},{longHash})
+    scratch:PTR TO lister
+  NEW tester.init_base(HASH_TINY,{key_get},{cmp},{long_hash})
   NEW link.build($01234567,tester,1)
   WriteF('initialized\n')
   add(tester,link)
@@ -50,10 +50,11 @@ EXCEPT
 ENDPROC
 
 -> This local function adds and displays information about the node just added
-PROC add(tester:PTR TO test,link:PTR TO lister)
+PROC add(tester:PTR TO unordered_hash,link:PTR TO lister)
   DEF thing
+
   tester.add(link)
-  thing:=link.get_hash_value()
+  thing:=link.get_hash_value() AND $FFFF
   WriteF('Added \d ',link.get_value())
   WriteF('to bucket \d ',tester.hash_slot(thing))
   WriteF('with hash \h ',thing)

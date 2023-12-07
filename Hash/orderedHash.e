@@ -30,6 +30,7 @@ ENDPROC ret
 -> comparison(x:PTR TO hash_link,key):BOOL
 PROC init_base(tablesize,key,comparison,hash_function) OF ordered_hash
   DEF table:PTR TO LONG,count,q2:PTR TO queue
+
   NEW table[tablesize]
   FOR count:=0 TO tablesize-1
     NEW q2.init()
@@ -42,6 +43,7 @@ ENDPROC
 -> add a new hash_link
 PROC add(link:PTR TO hash_link) OF ordered_hash
   DEF hashvalue,entry:PTR TO queue,q:PTR TO queue
+
   hashvalue:=self.hash_slot(link.get_hash_value())
   entry:=self.get_slot(hashvalue)
   entry.enqueue(link)
@@ -71,6 +73,7 @@ PROC next() OF ordered_hash_iterator IS self.i.next()
 
 PROC get_current_item() OF ordered_hash_iterator
   DEF x:PTR TO order_node
+
   x:=self.i.get_current_item()
 ENDPROC x.get_node()
 
@@ -78,11 +81,12 @@ ENDPROC x.get_node()
 PROC rehash(size,old:PTR TO ordered_hash) OF ordered_hash
   DEF order_q:PTR TO queue,q3:PTR TO queue,
     me:PTR TO order_node,my_node:PTR TO hash_link,
-	table:PTR TO LONG
+    table:PTR TO LONG
+
   IF size=old.get_size()
     SUPER self.initializer(old.get_entries(),size,
       old.get_key_get(),old.get_comparison(),
-	  old.get_hash_function(),old.get_num_entries())
+      old.get_hash_function(),old.get_num_entries())
     self.q:=old.get_queue()
     Dispose(old)
     RETURN

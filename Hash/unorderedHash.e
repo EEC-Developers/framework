@@ -61,9 +61,9 @@ PROC next() OF unordered_hash_iterator
   WHILE self.i.next()=FALSE
     -> column advance
     END self.i
-    self.col++
+    self.col+=1
     -> abort if last column reached
-    IF self.col>=self.n THEN RETURN FALSE
+    IF self.col = self.n THEN RETURN FALSE
     NEW self.i.init(self.table[self.col])
   ENDWHILE
 ENDPROC TRUE
@@ -75,7 +75,7 @@ PROC rehash(size,old:PTR TO unordered_hash) OF unordered_hash
   IF size=old.get_size()
     SUPER self.initializer(old.get_entries(),old.get_size(),
       old.get_comparison(),old.get_hash_function(),
-	  old.get_num_entries())
+      old.get_num_entries())
     Dispose(old)
     RETURN
   ENDIF

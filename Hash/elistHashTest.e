@@ -1,4 +1,4 @@
-
+-> E-List hash test of composite_hash
 
 MODULE 'Hash/hashbase','Hash/unorderedHash','Iterator/iterator'
 
@@ -16,9 +16,9 @@ DEF lister:PTR TO unordered_hash,
 PROC key_get(x:PTR TO tester) IS x.my_key
 
 -> Local constructor
-PROC build(list,value) OF tester
-  self.my_key:=list
-  SUPER self.init_link(list,lister,value)
+PROC build(elist,value) OF tester
+  self.my_key:=elist
+  SUPER self.init_link(elist,lister,value)
 ENDPROC
 
 -> key comparison function
@@ -57,7 +57,7 @@ PROC add(link:PTR TO tester)
   junk:=key_get(link)
   WriteF('Added \d ',link.get_value())
   WriteF('to bucket \d ',lister.hash_slot(link))
-  WriteF('with hash \h ',link.get_hash_value())
+  WriteF('with hash \h ',link.get_hash_value() AND $FFFF)
   WriteF('key address \h ',junk)
   WriteF('listlen \d\n',ListLen(junk))
 ENDPROC

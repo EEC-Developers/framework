@@ -44,9 +44,13 @@ PROC get_hash_function() OF hash_base IS self.hash_func
 
 PROC get_key_get() OF hash_base IS self.get_key
 
-PROC increment_num_entries() OF hash_base IS self.num_entries++
+PROC increment_num_entries() OF hash_base
+  self.num_entries+=1
+ENDPROC
 
-PROC decrement_num_entries() OF hash_base IS self.num_entries--
+PROC decrement_num_entries() OF hash_base
+  self.num_entries-=1
+ENDPROC
 
 -> signature for key_getter is key_getter(link:PTR TO hash_link)
 ->   and returns the key (usually a pointer to an OBJECT)
@@ -67,13 +71,14 @@ ENDPROC self.compare_key(self.get_key(link),key)
 
 PROC hash_function(link:PTR TO hash_link) OF hash_base
   DEF hasher
+
   hasher:=self.hash_func
 ENDPROC hasher(self.get_key(link))
 
 -> constructor
 PROC init_link(key,parent:PTR TO hash_base,value) OF hash_link
   SUPER self.init()
-  self.hash_value:=parent.hash_function(key)
+  self.hash_value:=parent.hash_function(key) AND $FFFF
   self.value:=value
 ENDPROC
 
@@ -82,6 +87,7 @@ PROC remove_from_slot(slot) OF hash_base IS EMPTY
 -> modulo distribution method for slot selection
 PROC hash_slot(hash_val) OF hash_base
   DEF ret
+
   ret:=hash_val AND $7FFF -> REMOVE negative sign bit
   ret:=Mod(ret,self.size)
 ENDPROC ret
@@ -103,6 +109,7 @@ ENDPROC
 -> destructor
 PROC end() OF hash_base
   DEF p:PTR TO LONG,count
+
   p:=self.entries
   FOR count:=0 TO self.size-1
     END p[count]
@@ -113,6 +120,7 @@ ENDPROC
 -> destruct all links if desired
 PROC end_links() OF hash_base
   DEF a:REG,o:REG PTR TO single_list_header,s:REG PTR TO hash_link
+  
   FOR a:=0 TO self.size-1
     o:=self.entries[a]
     WHILE o.get_first()<>NIL
@@ -127,6 +135,7 @@ ENDPROC
 PROC find(key) OF hash_base
   DEF iter:REG PTR TO list_iterator,index,h:REG,cmp,
     link:PTR TO hash_link
+  
   h:=self.hash_func(key)
   cmp:=self.compare_key
   index:=self.hash_slot(h)
@@ -151,6 +160,7 @@ EXPORT PROC long_hash(key) IS Eor(key AND $FFFF,Shr(key,16))
 
 EXPORT PROC string_hash(key)
   DEF hashvalue:REG, x:REG, y:REG PTR TO CHAR, count:REG
+  
   hashvalue:=0
   y:=key
   count:=StrLen(y)
@@ -162,12 +172,13 @@ EXPORT PROC string_hash(key)
     hashvalue:=Eor(x,hashvalue)
     count--
   ENDWHILE
-ENDPROC hashvalue AND $FFFF
+ENDPROC hashvalue
 
 -> hash of elist of either INT or LONG named composite
 ->   because it can be an elist of other hash function results
 EXPORT PROC composite_hash(key)
   DEF count:REG,hashvalue:REG
+  
   hashvalue:=0
   count:=ListLen(key)
   WHILE count>0
