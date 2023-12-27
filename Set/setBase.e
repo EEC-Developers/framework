@@ -1,17 +1,15 @@
-->abstract base class
+-> abstract base class of dataset data structure
 OPT MODULE
 
 MODULE 'Iterator/iterator'
 
-EXPORT OBJECT set
-ENDOBJECT
-
 EXPORT OBJECT subset PRIVATE
-  parent:PTR TO set
+  parent:PTR TO LONG
 ENDOBJECT
 
-PROC baseInit(parentSet:PTR TO set) OF subset -> Constructor
-  self.parent:=parentSet
+-> Constructor
+PROC base_init(parent_set) OF subset
+  self.parent:=parent_set
 ENDPROC
 
 PROC get_parent() OF subset IS self.parent
