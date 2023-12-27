@@ -18,3 +18,6 @@ Optionally, a second bidirectional iterator can be supplied for reversing the di
 
 ### EList iterator
 This is the only instantiation of an iterator in this directory. It is placed here purely because the e-list structure is the only internal data structure for the AmigaE language to iterate over. It is a child class of the bidirectional abstract iterator class and is provided as a wrapper class.
+
+## Utility module
+This module contains stand-alone functions to count the elements in an iterator and move the contents of an iterator to an elist. Both functions have O(n) time complexity.

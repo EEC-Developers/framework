@@ -24,7 +24,7 @@ PROC next() OF elist_iterator
     self.cursor:=0
     RETURN TRUE
   ENDIF
-  self.cursor++
+  self.cursor+=1
   IF self.cursor<self.len THEN RETURN TRUE
 ENDPROC FALSE
 
@@ -33,7 +33,7 @@ PROC prev() OF elist_iterator
     self.cursor:=self.len
     RETURN TRUE
   ENDIF
-  self.cursor--
+  self.cursor-=1
   IF self.cursor>=0 THEN RETURN TRUE
 ENDPROC FALSE
 
