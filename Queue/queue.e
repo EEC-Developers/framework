@@ -26,7 +26,7 @@ PROC enqueue(node:PTR TO queue_node) OF queue
   self.back:=node
 ENDPROC
 
-PROC merge(other:PTR TO queue)
+PROC merge(other:PTR TO queue) OF queue
   DEF node:PTR TO queue_node
 
   node:=other.get_first()

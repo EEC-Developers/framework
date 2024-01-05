@@ -29,6 +29,9 @@ Useful applications include line counting for "more"-style pagers, splitting fro
 # Word Wrap
 The word wrap filter process accepts an iterator of paragraph-size strings. Although no line breaks are allowed in the inputs, the output strings will have line breaks added to them in appropriate places.
 
+## Note
+Word wrap doesn't require a linefeed splitter afterward because it generates one line per append method call to the buffer.
+
 ## Methods
 * create(parent,output,line_length) -- constructor: parent is the filter, output is the buffer, line_length is the length of the line in characters.
 

@@ -15,7 +15,7 @@ ENDOBJECT
 PROC create(parent:PTR TO filter,output:PTR TO buffer,
     line_length) OF word_wrap
 
-  self.line_buffer:=String(line_length)
+  self.line_buffer:=String(line_length+1)
   IF self.line_buffer=NIL THEN Raise('MEM')
   self.line_length:=line_length
   SUPER self.add(parent,output)
@@ -23,24 +23,24 @@ ENDPROC
 
 ->private helper function
 PROC out_or_in(self:PTR TO word_wrap,my_length)
-  DEF o:PTR TO estring_buffer
+  DEF o:PTR TO buffer
 
   -> check if word is too long to be wrappable
   IF my_length>self.line_length THEN Raise('LINE')
   IF EstrLen(self.line_buffer)+my_length<StrMax(self.line_buffer)
 	MidStr(self.line_buffer,self.item,self.cursor,my_length)
 	self.cursor:=self.cursor+my_length
-    RETURN TRUE
+    RETURN FALSE
   ENDIF
   o:=self.get_output()
   -> output a line of text
+  StrAdd(self.line_buffer,'\n')
   o.append(self.line_buffer)
-  o.append('\n')
   -> move the remnant to the bottom address and clear line buffer
   MidStr(self.item,self.item,self.cursor,ALL)
   SetStr(self.line_buffer,0)
   self.cursor:=0
-ENDPROC FALSE
+ENDPROC TRUE
 
 PROC find_wrap_point(self:PTR TO word_wrap)
   DEF next_word:REG,next_hyphen:REG
@@ -64,7 +64,7 @@ PROC find_wrap_point(self:PTR TO word_wrap)
 ENDPROC out_or_in(self,next_word)
   
 PROC process(iter:PTR TO iterator) OF word_wrap
-  DEF end_line:REG,o:PTR TO estring_buffer
+  DEF end_line:REG,o:PTR TO buffer
 
   self.clear_output()
   WHILE (iter.next())
@@ -73,12 +73,20 @@ PROC process(iter:PTR TO iterator) OF word_wrap
     WHILE EstrLen(self.item) > self.line_length
       end_line:=find_wrap_point(self)
     ENDWHILE
-    WHILE EstrLen(self.item)>0 AND end_line
+    WHILE EstrLen(self.item)>0 AND Not(end_line)
       end_line:=find_wrap_point(self)
     ENDWHILE
 	o:=self.get_output()
-    IF end_line THEN o.append(self.line_buffer)
-    IF EstrLen(self.item)>0 THEN o.append(self.item)
-    o.append('\n\n')
+    IF Not(end_line)
+      StrAdd(self.line_buffer,'\n')
+      o.append(self.line_buffer)
+      SetStr(self.line_buffer,0)
+    ENDIF
+    IF EstrLen(self.item)>self.cursor
+      StrCopy(self.line_buffer,self.item)
+      StrAdd(self.line_buffer,'\n')
+      o.append(self.line_buffer)
+    ENDIF
+    o.append('\n')
   ENDWHILE
 ENDPROC

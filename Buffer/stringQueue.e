@@ -67,7 +67,7 @@ ENDPROC iter
 PROC merge(other:PTR TO string_queue) OF string_queue
   self.capacity+=other.get_capacity()
   self.count+=other.get_size()
-  SUPER merge(other)
+  SUPER self.merge(other)
 ENDPROC
 
 -> Destructor
