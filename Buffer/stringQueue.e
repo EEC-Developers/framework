@@ -70,10 +70,22 @@ PROC merge(other:PTR TO string_queue) OF string_queue
   SUPER self.merge(other)
 ENDPROC
 
+PROC clear() OF string_queue
+  DEF node:REG PTR TO string_node, q:REG PTR TO queue
+
+  q:=self.buf
+  WHILE q.get_first()<>NIL
+    node:=q.dequeue()
+    Dispose(node.cargo)
+    END node
+  ENDWHILE
+ENDPROC
+
 -> Destructor
 PROC end() OF string_queue
   DEF q:PTR TO queue
 
+  self.clear()
   q:=self.buf
   END q
 ENDPROC
