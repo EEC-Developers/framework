@@ -6,31 +6,27 @@ MODULE 'Queue/queue', 'List/singleList', 'Iterator/iterator',
   'List/listBase','Buffer/bufferBase'
 
 EXPORT OBJECT filter PRIVATE
-  source:PTR TO iterator
   chain:PTR TO queue
 ENDOBJECT
 
 EXPORT OBJECT filter_process OF queue_node PRIVATE
-  parent:PTR TO filter
   out:PTR TO buffer
 ENDOBJECT
-
-PROC get_parent() OF filter_process IS self.parent
 
 PROC get_output() OF filter_process IS self.out
 
 PROC clear_output() OF filter_process IS self.out.clear()
 
 -> Constructor
-PROC init() OF filter
+PROC init(output:PTR TO buffer) OF filter
   NEW self.chain.init()
 ENDPROC
 
-PROC process() OF filter
+PROC process(prev:PTR TO iterator) OF filter
   DEF iter:REG PTR TO list_iterator, source:PTR TO buffer,
-    curr:REG PTR TO filter_process, prev:PTR TO iterator
+    curr:REG PTR TO filter_process
 
-  prev:=self.source
+  curr:=NIL
   NEW iter.init(self.chain)
   WHILE iter.next()
     curr:=iter.get_current_item()
@@ -38,15 +34,24 @@ PROC process() OF filter
     source:=curr.get_output()
     prev:=source.get_iterator()
   ENDWHILE
-ENDPROC curr
+  -> exception only occurs when no filter_process has been added
+  IF curr=NIL THEN Raise('FILT')
+ENDPROC
 
 PROC enqueue(filt_process:PTR TO filter_process) OF filter
   self.chain.enqueue(filt_process)
 ENDPROC
 
+PROC get_output() OF filter
+  DEF fp:PTR TO filter_process
+
+  fp:=self.chain.get_back()
+  -> Raise exception if no filter_process has been added
+  IF fp=NIL THEN Raise('FILT')
+ENDPROC fp.get_output()
+
 -> Constructor
 PROC add(parent:PTR TO filter,output:PTR TO buffer) OF filter_process
-  self.parent:=parent
   parent.enqueue(self)
   self.out:=output
 ENDPROC

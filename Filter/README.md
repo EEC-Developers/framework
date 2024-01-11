@@ -3,19 +3,17 @@ A filter is a piece of code that iterates over a source of incoming data and out
 
 ## Filter Methods
 * init() -- initializes the internal filter queue
-* Process() -- propogates data from the source buffer to all the filter processes in the queue.
+* Process(iter) -- processes the iter to all the filter_process stages in the queue or raises 'FILT' exception if there are no filter_process stages added to the queue.
 * enqueue(filter_process) -- adds the specified filter_process to the end of the queue
+* get_output() -- gets the buffer of the last filter_process. It Raises a 'FILT' exception if the filter has no filter_processes added to it.
 
 # Filter Process
-Each stage of a filter is broken down into multiple filter processes.
+Each filter is broken down into multiple filter_process stages.
 
 ## Filter Process Methods
 * add(parent, output) -- constructor that adds the process to the parent filter using the output buffer class as storage.
 * process(iterator) -- processes all of the items from the previous output buffer's iterator
 * clear_output() -- called by the process method at the beginning to remove any remaining contents
-
-## Filter Process Getters
-* get_parent() -- accesses the filter that this process belongs to
 * get_output() -- accesses the handle that outputs to the buffer
 
 # Splitter
@@ -38,9 +36,15 @@ Word wrap doesn't require a linefeed splitter afterward because it generates one
 # Passthrough
 Moves from input to output unmodified. It is useful for converting to different buffer types.
 
-# Text List
+# Text List Base
 Creates a syntactically correct, punctuated list of items in English from an iterator of strings.
 
 ## Methods
 * create(parent,output,work_size) -- constructor: parent is the filter, output is the buffer, work_size is the size of the string buffer to be placed in the self.work estring.
-* generate() -- method that must be supplied by a child class to output each string. The string is contained in self.work and the enumerated status of the class is in self.is_singular. See in-code comments for more specific information.
+* generate() -- abstract method to output each string. The string is contained in self.work and the enumerated status of the class is in self.status. See in-code comments for more specific information.
+
+# Subfilter
+Makes a filter of multiple filter_processes and yields the cumulative process as if it were all one stage in the current filter
+
+## Methods
+* build(parent) -- constructor: parent is the filter this subfilter is called from.
