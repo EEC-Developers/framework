@@ -5,6 +5,9 @@ OPT MODULE
 MODULE 'Iterator/iterator','List/singleList','List/listBase',
   'Hash/hashBase'
 
+-> Sentinal value for dynamic_hash
+EXPORT CONST GARBAGE_COLLECT=0
+
 EXPORT OBJECT unordered_hash OF hash_base
 ENDOBJECT
 
@@ -72,6 +75,7 @@ ENDPROC TRUE
 PROC rehash(size,old:PTR TO unordered_hash) OF unordered_hash
   DEF count:REG,slot:REG PTR TO single_list_header,table:REG PTR TO LONG,
     item:REG PTR TO hash_link
+  nullable:=FALSE
   IF size=old.get_size()
     SUPER self.initializer(old.get_entries(),old.get_size(),
       old.get_comparison(),old.get_hash_function(),
@@ -79,7 +83,9 @@ PROC rehash(size,old:PTR TO unordered_hash) OF unordered_hash
     Dispose(old)
     RETURN
   ENDIF
-  NEW table[size]
+  IF size=GARBAGE_COLLECT -> dynamic_hash sentinel
+    size:=old.get_size()
+  ENDIF
   FOR count:=0 TO size-1
     NEW slot.init()
     table[count]:=slot

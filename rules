@@ -1,0 +1,49 @@
+all:
+
+dirs:
+	makdir Iterator List Set Queue Hash Filter Buffer Games Games/Adventure
+
+Iterator/iterator.m: /Iterator/iterator.e
+	$(e) $(dep)
+
+Iterator/bidirectional.m: /Iterator/bidirectional.e Iterator/iterator.m
+	$(e) $(dep)
+
+Iterator/utility.m: /Iterator/utility.e Iterator/iterator.m Iterator/bidirectional.m
+	$(e) $(dep)
+
+List/listBase.m: /List/listBase.e Iterator/iterator.m
+	$(e) $(dep)
+
+List/singleList.m: /List/singleList.e List/listBase.m Iterator/iterator.m
+	$(e) $(dep)
+
+List/list.m: /List/list.e List/lisbBase.m Iterator/iterator.m Iterator/bidirectional.m
+	$(e) $(dep)
+
+Set/setBase.m: /Set/setBase.e Iterator/iterator.m
+	$(e) $(dep)
+
+Set/bitVector.m: /Set/bitVector.e Set/setBase.m Iterator/iterator.m
+	$(e) $(dep)
+
+Queue/queue.m: /Queue/queue.e List/listBase.m List/singleList.m Iterator/iterator.m
+	$(e) $(dep)
+
+Hash/hashBase.m: /Hash/hashBase.e List/singleList.m List/listBase.m Iterator/iterator.m
+	$(e) $(dep)
+
+Hash/unorderedHash.m: /Hash/unorderedHash.e Hash/hashBase.m List/singleList.m List/listBase.m Iterator/iterator.m
+	$(e) $(dep)
+
+Hash/orderedHash.m: /Hash/orderedHash.e Hash/hashBase.m Queue/queue.m List/singleList.m List/listBase.m Iterator/iterator.m
+	$(e) $(dep)
+
+Filter/textList.m: /Filter/textListBase.e Iterator/iterator.m
+	$(e) $(dep)
+
+Filter/wordWrap.m: /Filter/wordWrap.e Iterator/iterator.m
+	$(e) $(dep)
+
+Games/Adventure/textAdventure.m: /Games/Adventure/textAdventure.e TextUtilites/textList.m TextUtilites/wordWrap.m Set/setBase.m Hash/stringHash.m Hash/hashBase.m Iterator/iterator.m
+	$(e) $(dep)
