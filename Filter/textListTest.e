@@ -2,13 +2,9 @@
 
 MODULE 'Filter/textListBase','Filter/wordWrap','Filter/filterBase',
   'Buffer/stringQueue','Buffer/estring','Buffer/bufferBase',
-  'Iterator/iterator','List/listBase','List/singleList'
+  'Iterator/iterator'
 
 ENUM TEST_OK,TEST_UNDEFINED
-
-OBJECT name OF single_list_node
-  item:PTR TO CHAR
-ENDOBJECT
 
 OBJECT text_list OF text_list_base
 ENDOBJECT
@@ -24,10 +20,10 @@ PROC generate() OF text_list
       buf.append(work)
     CASE TEXT_PLURAL_FINAL
       StringF(work2,'\s as gifts.',self.work)
-	  buf.append(work2)
+      buf.append(work2)
     CASE TEXT_EMPTY
-	  StringF(work2, 'nothing.')
-	  buf.append(work2)
+      StringF(work2, 'nothing.')
+      buf.append(work2)
     DEFAULT
       Raise(TEST_UNDEFINED)
   ENDSELECT
@@ -38,9 +34,9 @@ PROC out(n:PTR TO name) IS WriteF('\s',n.item)
 PROC main() HANDLE
   DEF lister:PTR TO textListBase,wrap:PTR TO word_wrap,
     filt:PTR TO filter,output:PTR TO estring_buffer,
-    q:PTR TO string_queue,iter:PTR TO list_iterator,
-    count:REG,node:PTR TO name,
-    list:PTR TO single_list_header,content
+    q:PTR TO string_queue,i:REG,
+    count:REG,node:PTR TO name,q2:PTR TO string_queue,
+    content
 
   NEW output.init(1024)
   NEW filt.init()
@@ -52,23 +48,21 @@ PROC main() HANDLE
 
   content:=['a partridge','turtle-doves','french hens',
     'calling birds','gold rings','laying geese',
-	'swimming swans','milk maids','pipers','drummers',
-	'dancing ladies','leaping lords'
+    'swimming swans','milk maids','pipers','drummers',
+    'dancing ladies','leaping lords'
   ]
-  NEW list.init()
+  NEW q2.init()
   FOR count:=0 TO ListLen(content)
     IF count>0
       WriteF('Christmas day number \d.\n',count)
-      NEW node.init()
-      node.item:=ListItem(content,count-1)
-      list.insert(node)
+      FOR i:=0 TO count-1
+        q2.append(ListItem(content,i))
+      ENDFOR
     ELSE
       WriteF('On Christmas Eve\n')
     ENDIF
-    NEW iter.init(list)
-    filt.process(iter)
-	WriteF('\s',output)
-    END iter
+    filt.process(q2)
+    WriteF('\s',output)
   ENDFOR
 EXCEPT
   SELECT exception
@@ -76,7 +70,7 @@ EXCEPT
       WriteF('Encountered undefined behavior.\n')
     CASE TEST_OK
       WriteF('Ended successfully.\n')
-	DEFAULT
-	  WriteF('Encountered \s exception.\n',exception)
+    DEFAULT
+      WriteF('Encountered \s exception.\n',exception)
   ENDSELECT
 ENDPROC
