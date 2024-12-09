@@ -170,16 +170,3 @@ EXPORT PROC string_hash(key)
     count--
   ENDWHILE
 ENDPROC hashvalue
-
--> hash of elist of either INT or LONG named composite
-->   because it can be an elist of other hash function results
-EXPORT PROC composite_hash(key)
-  DEF count:REG,hashvalue:REG
-  
-  hashvalue:=0
-  count:=ListLen(key)
-  WHILE count>0
-    count-=1
-    hashvalue:=Eor(hashvalue,ListItem(key,count))
-  ENDWHILE
-ENDPROC Eor(hashvalue AND $FFFF,Shr(hashvalue,16))

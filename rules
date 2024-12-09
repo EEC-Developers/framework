@@ -6,6 +6,12 @@ dirs:
 Iterator/iterator.m: /Iterator/iterator.e
 	$(e) $(dep)
 
+Iterator/bidirectional.m: /Iterator/bidirectional.e Iterator/iterator.m
+	$(e) $(dep)
+
+Iterator/utility.m: /Iterator/utility.e Iterator/iterator.m Iterator/bidirectional.m
+	$(e) $(dep)
+
 List/listBase.m: /List/listBase.e Iterator/iterator.m
 	$(e) $(dep)
 

@@ -1,0 +1,11 @@
+# build for MorphOS, AmigaOS or AmigaOS4 target in next line constant
+arch=morphos
+
+# create debug, release, install or test build in next line constant
+build_type=test
+
+
+
+ec=eec $(arch) 
+
+#i buildfile

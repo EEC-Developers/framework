@@ -29,14 +29,11 @@ PROC generate() OF text_list
   ENDSELECT
 ENDPROC
 
-PROC out(n:PTR TO name) IS WriteF('\s',n.item)
-
 PROC main() HANDLE
   DEF lister:PTR TO textListBase,wrap:PTR TO word_wrap,
     filt:PTR TO filter,output:PTR TO estring_buffer,
-    q:PTR TO string_queue,i:REG,
-    count:REG,node:PTR TO name,q2:PTR TO string_queue,
-    content
+    q:PTR TO string_queue,i:REG,count:REG,
+    q2:PTR TO string_queue,content
 
   NEW output.init(1024)
   NEW filt.init()
@@ -70,7 +67,11 @@ EXCEPT
       WriteF('Encountered undefined behavior.\n')
     CASE TEST_OK
       WriteF('Ended successfully.\n')
+    CASE "MEM"
+      WriteF('Out of memory.\n')
+    CASE "FILT"
+      WriteF('Filter exception occurred.\n')
     DEFAULT
-      WriteF('Encountered \s exception.\n',exception)
+      WriteF('Encountered an unprocessed exception.\n')
   ENDSELECT
 ENDPROC

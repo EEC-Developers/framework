@@ -54,3 +54,8 @@ Its substructure is the unordered_hash_iterator.
 This is the alternate hash base that maintains the order all items are added in. It is the equivalent of Java's linked_hash_map. It preserves the sort order of all items added. Prioritization is one reason for using this but it is heavier than a standard unordered_hash_map because it the sort order is maintained by a separate queue internally.
 
 Its substructures include ordered_hash_iterator and the private, internal queue to maintain sort order of all entries.
+
+## dynamic_hash
+This unordered_hash derivative allows removal of hash-links although it requires a garbage-collection call to recover the freed memory from empty hash_node structures.
+
+Any rehash will collect garbage due to the add method weeding out empty hash_link structures, however `garbage_collect()` is supplied as a convenience method.
