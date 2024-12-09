@@ -10,6 +10,7 @@ EXPORT ENUM TEXT_EMPTY,TEXT_SINGULAR,TEXT_PLURAL,TEXT_PLURAL_FINAL,
 EXPORT OBJECT text_list_base OF filter_process
   status
   work
+  preamble
 ENDOBJECT
 
 -> self.is_singlular is guaranteed to be set to the proper value by
@@ -21,16 +22,18 @@ ENDOBJECT
 PROC generate() OF text_list_base IS EMPTY
 
 PROC create(parent:PTR TO filter,output:PTR TO buffer,
-    work_size) OF text_list_base
+    work_size,preamble) OF text_list_base
   self.work:=String(work_size)
   self.status:=TEXT_INITIALIZED
   SUPER self.add(parent,output)
 ENDPROC
 
 EXPORT PROC process(iter:PTR TO iterator) OF text_list_base
-  DEF item1:REG,item2:REG
+  DEF item1:REG,item2:REG,out:PTR TO buffer
 
   self.clear_output()
+  out:=self.get_output()
+  out.append(preamble)
   self.status:=TEXT_EMPTY
   IF iter.next()
     self.status:=TEXT_SINGULAR

@@ -1,0 +1,6 @@
+# build for MorphOS, AmigaOS or AmigaOS4 target in next line constant
+arch=morphos
+
+e=eec $(arch) 
+
+#i /build

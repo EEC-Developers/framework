@@ -18,7 +18,7 @@ PROC get_output() OF filter_process IS self.out
 PROC clear_output() OF filter_process IS self.out.clear()
 
 -> Constructor
-PROC init(output:PTR TO buffer) OF filter
+PROC init() OF filter
   NEW self.chain.init()
 ENDPROC
 
