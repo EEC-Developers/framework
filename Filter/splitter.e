@@ -12,12 +12,14 @@ ENDOBJECT
 
 -> Constructor
 -> delimiter defults to linefeed
-PROC create(parent,output:PTR TO string_queue,string_size,
-    delimiter=$0a) OF splitter
+PROC create(parent,string_size,delimiter=$0a) OF splitter
+  DEF output:PTR TO string_queue
 
+  SUPER self.add(parent)
   self.delimiter:=delimiter
   NEW self.work.init(string_size)
-  SUPER self.add(parent,output)
+  NEW output.init()
+  self.set_output(output)
 ENDPROC
 
 PROC process(iter:PTR TO iterator) OF splitter

@@ -13,7 +13,14 @@ EXPORT OBJECT filter_process OF queue_node PRIVATE
   out:PTR TO buffer
 ENDOBJECT
 
-PROC get_output() OF filter_process IS self.out
+PROC get_output() OF filter_process
+  IF self.out=NIL THEN Raise("INIT")
+ENDPROC self.out
+
+PROC set_output(o) OF filter_process
+  IF o=NIL THEN Raise("FILT")
+  self.out:=o
+ENDPROC
 
 PROC clear_output() OF filter_process IS self.out.clear()
 
@@ -51,9 +58,8 @@ PROC get_output() OF filter
 ENDPROC fp.get_output()
 
 -> Constructor
-PROC add(parent:PTR TO filter,output:PTR TO buffer) OF filter_process
+PROC add(parent:PTR TO filter) OF filter_process
   parent.enqueue(self)
-  self.out:=output
 ENDPROC
 
 PROC process(iter) OF filter_process IS EMPTY

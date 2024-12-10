@@ -1,7 +1,7 @@
 OPT MODULE
 
 MODULE 'Filter/filterBase','Filter/textList','Filter/wordWrap',
-  'Buffer/stringQueue','Hash/hashBase',
+  'Filter/stringify','Buffer/stringQueue','Hash/hashBase',
   'Hash/unorderedHash','Set/setBase','Set/bitVector',
   'Iterator/iterator','Iterator/elist'
 
@@ -32,11 +32,28 @@ PROC generate(name:PTR TO CHAR) OF object
   SUPER self.init(name)
 ENDPROC
 
-EXPORT OBJECT inventory OF subset
+OBJECT inventory_lister OF text_list_base
 ENDOBJECT
 
--> constructor
-PROC create(parent,mask=0) OF inventory IS SUPER self.create(parent,mask)
+EXPORT OBJECT inventory OF subset PRIVATE
+ENDOBJECT
+
+-> iterates the names of the items in an inventory
+->   instead of the objects themselves
+OBJECT inventory_iter OF set_iterator
+ENDOBJECT
+
+PROC get_current_item() OF inventory_iter
+  DEF item:PTR TO object
+
+  item:=SUPER self.get_current_item()
+ENDPROC item.get_name()
+
+-> constructor of dummy mask
+PROC create(parent,mask=0) OF inventory
+  SUPER self.create(parent,mask)
+  self.lister:=NIL
+ENDPROC
 
 -> constructor
 PROC init(parent:PTR TO bit_vector,list:PTR TO LONG) OF inventory
@@ -58,6 +75,27 @@ ENDPROC ret
 
 PROC take(myitem:PTR TO object, source:PTR TO inventory) OF inventory
 ENDPROC source.give(myitem, self)
+
+PROC list() OF inventory
+  DEF lister:PTR TO inventory_lister,
+    iter:REG PTR TO inventory_iterator,
+    q:PTR TO string_queue,
+    strbuf:PTR TO string_buffer,
+    pass:PTR TO stringify,
+    filt:PTR TO filter,
+    str_q:PTR TO string_queue
+
+  NEW filt.init()
+  NEW str_q.init()
+  NEW lister.create(filt,'You see ')
+  lister.set_output(str_q)
+  NEW pass.stage(filt,lister)
+  NEW iter.init(self)
+  WHILE iter.next()
+    q.append(iter.get_current_item())
+  ENDWHILE
+  self.filt.process(q)
+ENDPROC filt.get_output()
 
 EXPORT OBJECT master_list OF unordered_hash PRIVATE
   all:PTR TO inventory
@@ -81,7 +119,10 @@ PROC init_master_list(object_list) OF master_list
   END obj
 ENDPROC
 
-EXPORT OBJECT exit_list OF unordered_hash
+OBJECT exit_lister OF text_list_base
+ENDOBJECT
+
+EXPORT OBJECT exit_list OF unordered_hash PRIVATE
 ENDOBJECT
 
 EXPORT OBJECT room
@@ -101,10 +142,10 @@ PROC exit_compare(e:PTR TO exit,d) IS StrCmp(e.get_direction(),d)=0
 PROC exit_get_direction(e:PTR TO exit) IS e.get_direction()
 
 -> constructor
--> note that destination is not allowed to be NIL
 PROC create_exit(el:PTR TO exit_list,
     direction:PTR TO CHAR,
     destinaton:PTR TO room) OF exit
+  IF destination=NIL THEN Raise("INIT")
   SUPER self.init_link(direction,el,destination)
   el.add(self)
 ENDPROC
@@ -136,15 +177,6 @@ PROC get_room_inventory() OF room IS self.items
 
 PROC get_room_exits() OF room IS self.exits
 
-OBJECT inventory_iter OF set_iterator
-ENDOBJECT
-
-PROC get_current_item() OF inventory_iter
-  DEF item:PTR TO object
-
-  item:=SUPER self.get_current_item()
-ENDPROC item.get_name()
-
 OBJECT exit_iter OF unordered_hash_iterator
 ENDOBJECT
 
@@ -154,8 +186,26 @@ PROC get_current_item() OF exit_iter
   e:=SUPER self.get_current_item()
 ENDPROC e.get_direction()
 
-OBJECT inventory_lister OF text_list_base
-ENDOBJECT
+PROC list() OF exit_list
+  DEF lister:PTR TO exit_lister,
+    iter:REG PTR TO exit_iterator,
+    q:PTR TO string_queue,
+    strbuf:PTR TO string_buffer,
+    pass:PTR TO stringify,
+    filt:PTR TO filter,
+    str_q:PTR TO string_queue
+
+  NEW filt.init()
+  NEW str_q.init()
+  NEW lister.create(filt,'The exits here are ')
+  lister.set_output(str_q)
+  NEW pass.stage(filt,lister)
+  NEW iter.init(self)
+  WHILE iter.next()
+    q.append(iter.get_current_item())
+  ENDWHILE
+  filt.process(q)
+ENDPROC filt.get_output()
 
 PROC generate() OF inventory_lister
   DEF work2[80]:STRING,
@@ -165,7 +215,8 @@ PROC generate() OF inventory_lister
     CASE TEXT_EMPTY
       out.append('no objects.')
     CASE TEXT_SINGULAR
-      out.append(work)
+	  StringF(work2,'\s.',work)
+      out.append(work2)
     CASE TEXT_PLURAL
       out.append(work)
     CASE TEXT_PLURAL_FINAL
@@ -176,9 +227,6 @@ PROC generate() OF inventory_lister
   ENDSELECT
 ENDPROC
 
-OBJECT exit_lister OF text_list_base
-ENDOBJECT
-
 PROC generate() OF exit_lister
   DEF work2[80]:STRING,
     out:PTR TO buffer
@@ -187,7 +235,8 @@ PROC generate() OF exit_lister
     CASE TEXT_EMPTY
       out.append('none.')
     CASE TEXT_SINGULAR
-      out.append(work)
+	  StringF(work2,'\s.',work)
+      out.append(work2)
     CASE TEXT_PLURAL
       out.append(work)
     CASE TEXT_PLURAL_FINAL
@@ -200,42 +249,16 @@ ENDPROC
 
 -> look method prints description, lists items and lists exits
 PROC look() OF room
-  DEF i:PTR TO inventory,
-    exits:PTR TO exit_iter,
-    inv:PTR TO inventory_iter,
-    p:PTR TO bit_vector,
+  DEF exits:PTR TO exit_list,
     f:PTR TO filter,
     q:PTR TO string_queue,
-    q1:PTR TO string_queue,
-    s_buf:PTR TO string_buffer,
     wrap:PTR TO word_wrap,
     paragraphs:PTR TO elist_buffer,
-    room_inv:PTR TO elist_buffer,
     d:PTR TO elist_iterator,
-	f2:PTR TO filter,
-	list:PTR TO inventory_lister,
-    f3:PTR TO filter,
-    exit_list:PTR TO exit_lister,
-    e:PTR TO exit,
 	o:PTR TO iterator
 
-  i:=self.items
-  p:=i.get_parent()
-  NEW inv.init(i)
-  NEW stuff_iter.init(i)
   NEW paragraphs.init(12)
   NEW f.init()
-  NEW f2.init()
-  NEW f3.init()
-  NEW q.init()
-  NEW q1.init()
-  NEW s_buf.init(2048)
-  NEW s_buf2.init(2048)
-  NEW inv_buffer.init(p.get_last_item())
-  NEW list.create(f2,s_buf,'You see ')
-  f2.enqueue(list)
-  NEW exit_list(f3,s_buf2,'The exits here are ')
-  f3.enqueue(exit_list)
   NEW d.init(self.description)
   -> add description to paragraphs buffer
   WHILE d.next()
@@ -243,28 +266,20 @@ PROC look() OF room
   ENDWHILE
   END d
   -> buffer inventory items
-  WHILE inv.next()
-    inv_buffer.append(inv.get_current_item())
+  o:=self.items.list()
+  WHILE o.next()
+    paragraphs.append(o.get_current_item())
   ENDWHILE
-  END inv
+  END o
   -> buffer exit list
-  NEW exits.init(self.get_room_exits())
-  WHILE exits.next()
-    e:=exits.get_current_item()
-    q1.append(e.get_direction())
+  exits:=self.get_room_exits()
+  NEW o(exits.list())
+  WHILE o.next()
+    paragraphs.append(o.get_current_item())
   ENDWHILE
-  END exits
-  -> list inventory filter
-  NEW d.init(inv_buffer)
-  f2.process(d)
-  END d
-  paragraphs.append(s_buf)
-  -> list exit filter
-  f3.process(q1)
-  paragraphs.append(s_buf2)
+  END o
   -> word wrap all of them
-  NEW wrap.create(f,q,80) -> TODO: change 80 to whatever line length
-  f.enqueue(wrap)
+  NEW wrap.create(f,80) -> TODO: change 80 to whatever line length
   f.process(paragraphs)
   o:=f.get_output()
   WHILE o.next()
@@ -272,9 +287,8 @@ PROC look() OF room
   ENDWHILE
   END o
   END f
-  END f2
-  END f3
   END paragraphs
+  END q
 ENDPROC
 
 PROC end() OF room

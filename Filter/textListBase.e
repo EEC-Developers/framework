@@ -21,11 +21,10 @@ ENDOBJECT
 -> if TEXT_PLURAL_FINAL is set, it's the last call
 PROC generate() OF text_list_base IS EMPTY
 
-PROC create(parent:PTR TO filter,output:PTR TO buffer,
-    work_size,preamble) OF text_list_base
+PROC create(parent:PTR TO filter,work_size,preamble) OF text_list_base
   self.work:=String(work_size)
   self.status:=TEXT_INITIALIZED
-  SUPER self.add(parent,output)
+  SUPER self.add(parent)
 ENDPROC
 
 EXPORT PROC process(iter:PTR TO iterator) OF text_list_base
