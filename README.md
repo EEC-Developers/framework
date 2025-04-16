@@ -1,6 +1,6 @@
 # EEC Framework
 
-#**WARNING**
+# **WARNING**
 The framework is in a state of flux at the moment and might not even compile, let alone work in any useful state.
 
 ## Description
