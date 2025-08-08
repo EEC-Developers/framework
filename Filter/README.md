@@ -11,7 +11,7 @@ A filter is a piece of code that iterates over a source of incoming data and out
 Each filter is broken down into multiple filter_process stages.
 
 ## Filter Process Methods
-* add(parent, output) -- constructor that adds the process to the parent filter using the output buffer class as storage.
+* add(parent) -- constructor that adds the process to the parent filter using the output buffer class as storage.
 * process(iterator) -- processes all of the items from the previous output buffer's iterator
 * clear_output() -- called by the process method at the beginning to remove any remaining contents
 * get_output() -- accesses the handle that outputs to the buffer
@@ -42,9 +42,3 @@ Creates a syntactically correct, punctuated list of items in English from an ite
 ## Methods
 * create(parent,output,work_size) -- constructor: parent is the filter, output is the buffer, work_size is the size of the string buffer to be placed in the self.work estring.
 * generate() -- abstract method to output each string. The string is contained in self.work and the enumerated status of the class is in self.status. See in-code comments for more specific information.
-
-# Subfilter
-Makes a filter of multiple filter_processes and yields the cumulative process as if it were all one stage in the current filter
-
-## Methods
-* build(parent) -- constructor: parent is the filter this subfilter is called from.
