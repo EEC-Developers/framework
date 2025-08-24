@@ -3,7 +3,7 @@ A filter is a piece of code that iterates over a source of incoming data and out
 
 ## Filter Methods
 * init() -- initializes the internal filter queue
-* Process(iter) -- processes the iter to all the filter_process stages in the queue or raises 'FILT' exception if there are no filter_process stages added to the queue.
+* process(iter) -- processes the iter to all the filter_process stages in the queue or raises 'FILT' exception if there are no filter_process stages added to the queue.
 * enqueue(filter_process) -- adds the specified filter_process to the end of the queue
 * get_output() -- gets the buffer of the last filter_process. It Raises a 'FILT' exception if the filter has no filter_processes added to it.
 
@@ -33,8 +33,14 @@ Word wrap doesn't require a linefeed splitter afterward because it generates one
 ## Methods
 * create(parent,output,line_length) -- constructor: parent is the filter, output is the buffer, line_length is the length of the line in characters.
 
-# Passthrough
-Moves from input to output unmodified. It is useful for converting to different buffer types.
+# Stringify
+Moves from input to a string_buffer unmodified using the capacity of the previous stage to set the size of the string_buffer.
+
+## Note
+Preallocating the output structure is not supported by this structure.
+
+## Methods
+* stage(parent,previous) -- A custom constructor that uses the `get_capacity()` method to set the size of the string_buffer.
 
 # Text List Base
 Creates a syntactically correct, punctuated list of items in English from an iterator of strings.
